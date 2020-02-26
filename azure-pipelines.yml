@@ -45,8 +45,8 @@ steps:
 
   - script: | 
       echo $AWS_ACCESS_KEY_ID
-      chmod +x scripts/deploy.sh
-      ./scripts/deploy.sh       
+      chmod +x scripts/publish.sh
+      ./scripts/publish.sh
 #      export PATH="/home/vsts/.local/bin:$PATH"
     displayName: 'deploy'
     env:
