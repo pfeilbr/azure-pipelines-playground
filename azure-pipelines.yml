@@ -12,6 +12,32 @@ pool:
 steps:
   - script: echo Hello, world!
     displayName: 'Run a one-line script'
+
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.6'
+      architecture: 'x64'
+
+  - script: | 
+      sudo pip3 install --upgrade pip
+      pip3 install awscli --upgrade --user
+      export PATH="/home/vsts/.local/bin:$PATH"
+      aws --version
+      echo What
+      echo $AWS_ACCESS_KEY_ID
+    displayName: 'Install AWS CLI'
+    env:
+      AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+      AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+
+  - script: | 
+      echo $AWS_ACCESS_KEY_ID
+      export PATH="/home/vsts/.local/bin:$PATH"
+      aws s3 ls
+    displayName: 'list S3 buckets'
+    env:
+      AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+      AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)    
   
   - script: |
       echo Add other tasks to build, test, and deploy your project.
