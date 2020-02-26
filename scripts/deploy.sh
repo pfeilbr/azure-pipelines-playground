@@ -30,12 +30,16 @@ change_origin_path() {
   previous_tag_name=$(git describe --abbrev=0 --tags `git rev-list --tags --skip=1  --max-count=1`)
 
   echo -e "Changing cloudfront origin..."
-  current_distribution_config=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id})
+  current_distribution_config=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id} --query "Distribution.DistributionConfig")
+  echo current_distribution_config
+  echo $current_distribution_config
   etag=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id} --query "ETag" --output text)
 #  echo $current_distribution_config
 #   next_distribution_config=$(bin/lib/update-distribution ${tag_name} "${current_distribution_config}")
 #   etag=$(bin/lib/get-etag "${current_distribution_config}")
   next_distribution_config=$(echo $current_distribution_config | sed "s/${previous_tag_name}/${tag_name}/g")
+  echo next_distribution_config
+  echo $next_distribution_config
   aws cloudfront update-distribution --id ${cloudfront_distribution_id} --distribution-config ${next_distribution_config} --if-match ${etag}
   echo -e "Done"
 }
