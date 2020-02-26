@@ -22,10 +22,13 @@ steps:
       sudo pip3 install --upgrade pip
       pip3 install awscli --upgrade --user
       export PATH="/home/vsts/.local/bin:$PATH"
+      echo $PATH
       aws --version
       which -a aws
       ls -alt /home/vsts/.local/bin/aws
       ls -alt /usr/local/bin/aws
+      /home/vsts/.local/bin/aws --version
+      /usr/local/bin/aws --version
     displayName: 'Install AWS CLI'
     env:
       AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
