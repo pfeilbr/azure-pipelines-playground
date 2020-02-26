@@ -9,7 +9,7 @@ set -o nounset
 set -o pipefail
 set -o noglob
 
-CLOUDFRONT_DISTRIBUTION_ID="E2IL5HY5XTHLNW"
+CLOUDFRONT_DISTRIBUTION_ID="E3490EXSMQAI3D"
 BUCKET_NAME="com.merck.mysite01"
 CONTENT_DIRECTORY_PATH="./public"
 
@@ -59,19 +59,25 @@ deploy_to_git_tag() {
   invalidate_cache ${cloudfront_distribution_id}
 }
 
+update_content_with_version() {
+    file_path=${1}
+    version_placeholder="__VERSION__"
+    sed -i "s/${version_placeholder}/${deploy_tag}/g" "${file_path}"
+    cat ${file_path}
+}
+
 main() {
   content_directory_path=${CONTENT_DIRECTORY_PATH}
+  index_file_path="${content_directory_path}/index.html"
   cloudfront_distribution_id=${CLOUDFRONT_DISTRIBUTION_ID}
   bucket_name=${BUCKET_NAME}
-  deploy_tag=$(git describe --tags --abbrev=0)
+  deploy_tag=$(git describe)
+  # tag name only.  no commit hash appended
+  #deploy_tag=$(git describe --tags --abbrev=0)
 
 
   if [ "${deploy_tag}" ]; then
-    index_file_path="./public/index.html"
-    version_placeholder="__VERSION__"
-    sed -i "s/${version_placeholder}/${deploy_tag}/g" "${index_file_path}"
-    cat ${index_file_path}
-
+    update_content_with_version ${index_file_path}
     deploy_to_git_tag ${content_directory_path} ${deploy_tag} ${cloudfront_distribution_id} ${bucket_name}
     echo -e "Deploy success"
   else
