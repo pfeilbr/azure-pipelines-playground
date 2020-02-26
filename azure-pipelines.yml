@@ -40,7 +40,7 @@ steps:
 
   - script: | 
       echo $AWS_ACCESS_KEY_ID
-      ./chmod +x scripts/deploy.sh
+      chmod +x scripts/deploy.sh
       ./scripts/deploy.sh       
 #      export PATH="/home/vsts/.local/bin:$PATH"
     displayName: 'deploy'
