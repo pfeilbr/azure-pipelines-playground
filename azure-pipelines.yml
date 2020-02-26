@@ -18,21 +18,25 @@ steps:
       versionSpec: '3.6'
       architecture: 'x64'
 
-  - script: | 
-      sudo pip3 install --upgrade pip
-      pip3 install awscli --upgrade --user
-      export PATH="/home/vsts/.local/bin:$PATH"
-      echo $PATH
-      aws --version
-      which -a aws
-      ls -alt /home/vsts/.local/bin/aws
-      ls -alt /usr/local/bin/aws
-      /home/vsts/.local/bin/aws --version
-      /usr/local/bin/aws --version
-    displayName: 'Install AWS CLI'
-    env:
-      AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-      AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+  # to install aws cli manually
+  # this is commented out because it's included in vmImage: 'ubuntu-latest'
+  # see <https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md>
+  #
+  # - script: | 
+  #     sudo pip3 install --upgrade pip
+  #     pip3 install awscli --upgrade --user
+  #     export PATH="/home/vsts/.local/bin:$PATH"
+  #     echo $PATH
+  #     aws --version
+  #     which -a aws
+  #     ls -alt /home/vsts/.local/bin/aws
+  #     ls -alt /usr/local/bin/aws
+  #     /home/vsts/.local/bin/aws --version
+  #     /usr/local/bin/aws --version
+  #   displayName: 'Install AWS CLI'
+  #   env:
+  #     AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+  #     AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
 
   - script: | 
       echo $AWS_ACCESS_KEY_ID
