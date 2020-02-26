@@ -54,6 +54,7 @@ Resources:
         Origins:
           - Id: "WebsiteBucketOrigin"
             DomainName: { "Fn::GetAtt": ["S3BucketForWebsiteContent", "DomainName"] }
+            OriginPath: "/v0.0.1"
             S3OriginConfig:
               OriginAccessIdentity:
                 Fn::Join:
@@ -115,6 +116,10 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
+        - Action:
+          - cloudformation:DescribeStacks
+          Effect: Allow
+          Resource: !Sub "${AWS::StackId}"
         - Action:
           - s3:ListBucket
           - s3:PutObject
