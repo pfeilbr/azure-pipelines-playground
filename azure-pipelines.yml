@@ -24,6 +24,8 @@ steps:
       export PATH="/home/vsts/.local/bin:$PATH"
       aws --version
       which -a aws
+      ls -alt /home/vsts/.local/bin/aws
+      ls -alt /usr/local/bin/aws
     displayName: 'Install AWS CLI'
     env:
       AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
