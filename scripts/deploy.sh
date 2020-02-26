@@ -40,7 +40,7 @@ change_origin_path() {
   next_distribution_config=$(echo $current_distribution_config | sed "s/${previous_tag_name}/${tag_name}/g")
   echo next_distribution_config
   echo $next_distribution_config
-  aws cloudfront update-distribution --id ${cloudfront_distribution_id} --distribution-config ${next_distribution_config} --if-match ${etag}
+  aws cloudfront update-distribution --id ${cloudfront_distribution_id} --distribution-config "'${next_distribution_config}'" --if-match ${etag}
   echo -e "Done"
 }
 
