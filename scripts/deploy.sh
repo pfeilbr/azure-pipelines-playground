@@ -27,13 +27,16 @@ change_origin_path() {
   tag_name=${1}
   cloudfront_distribution_id=${2}
 
+  previous_tag_name=$(git describe --abbrev=0 --tags `git rev-list --tags --skip=1  --max-count=1`)
+
   echo -e "Changing cloudfront origin..."
   current_distribution_config=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id})
+  etag=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id} --query "ETag" --output text)
   echo $current_distribution_config
 #   next_distribution_config=$(bin/lib/update-distribution ${tag_name} "${current_distribution_config}")
 #   etag=$(bin/lib/get-etag "${current_distribution_config}")
+  next_distribution_config=$(echo $current_distribution_config | sed "s/${previous_tag_name}/${tag_name}/g")
   next_distribution_config="my_next_distribution_config"
-  etag="my_etag"
   echo aws cloudfront update-distribution --id ${cloudfront_distribution_id} --distribution-config ${next_distribution_config} --if-match ${etag}
   echo -e "Done"
 }
@@ -42,7 +45,7 @@ invalidate_cache() {
   cloudfront_distribution_id=${1}
 
   echo -e "Invalidating cloudfront cache..."
-  echo aws cloudfront create-invalidation --distribution-id ${cloudfront_distribution_id} --paths /*
+  aws cloudfront create-invalidation --distribution-id ${cloudfront_distribution_id} --paths "/*"
   echo -e "Done"
 }
 
@@ -55,7 +58,7 @@ deploy_to_git_tag() {
   echo -e "Deploying ${tag_name}"
   sync_s3 ${content_directory_path} ${bucket_name} ${tag_name}
   change_origin_path ${tag_name} ${cloudfront_distribution_id}
-  echo aws cloudfront wait distribution-deployed --id ${cloudfront_distribution_id}
+  aws cloudfront wait distribution-deployed --id ${cloudfront_distribution_id}
   invalidate_cache ${cloudfront_distribution_id}
 }
 
@@ -71,9 +74,9 @@ main() {
   index_file_path="${content_directory_path}/index.html"
   cloudfront_distribution_id=${CLOUDFRONT_DISTRIBUTION_ID}
   bucket_name=${BUCKET_NAME}
-  deploy_tag=$(git describe)
+  #deploy_tag=$(git describe)
   # tag name only.  no commit hash appended
-  #deploy_tag=$(git describe --tags --abbrev=0)
+  deploy_tag=$(git describe --tags --abbrev=0)
 
 
   if [ "${deploy_tag}" ]; then
