@@ -13,15 +13,15 @@ steps:
   - script: echo Hello, world!
     displayName: 'Run a one-line script'
 
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.6'
-      architecture: 'x64'
-
   # to install aws cli manually
-  # this is commented out because it's included in vmImage: 'ubuntu-latest'
+  # the following two tasks are commented out because it's included in vmImage: 'ubuntu-latest'
   # see <https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md>
   #
+  # - task: UsePythonVersion@0
+  #   inputs:
+  #     versionSpec: '3.6'
+  #     architecture: 'x64'
+
   # - script: | 
   #     sudo pip3 install --upgrade pip
   #     pip3 install awscli --upgrade --user
@@ -41,7 +41,9 @@ steps:
   - script: | 
       echo $AWS_ACCESS_KEY_ID
       export PATH="/home/vsts/.local/bin:$PATH"
-      aws s3 ls
+      aws s3 ls | head -n 1
+      pwd
+      ls -alt
     displayName: 'list S3 buckets'
     env:
       AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
