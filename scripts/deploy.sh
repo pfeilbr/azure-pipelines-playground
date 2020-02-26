@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-aws s3 ls | head -n 1
-pwd
-ls -alt
-
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -34,10 +30,9 @@ change_origin_path() {
   echo current_distribution_config
   echo $current_distribution_config
   etag=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id} --query "ETag" --output text)
-#  echo $current_distribution_config
-#   next_distribution_config=$(bin/lib/update-distribution ${tag_name} "${current_distribution_config}")
-#   etag=$(bin/lib/get-etag "${current_distribution_config}")
   distribution_config_file_name="distribution_config.json"
+  
+  # update S3 bucket path
   echo $current_distribution_config | sed "s/${previous_tag_name}/${tag_name}/g" > ${distribution_config_file_name}
   echo distribution_config_file_name
   cat ${distribution_config_file_name}
@@ -78,7 +73,6 @@ main() {
   index_file_path="${content_directory_path}/index.html"
   cloudfront_distribution_id=${CLOUDFRONT_DISTRIBUTION_ID}
   bucket_name=${BUCKET_NAME}
-  #deploy_tag=$(git describe)
   # tag name only.  no commit hash appended
   deploy_tag=$(git describe --tags --abbrev=0)
 
