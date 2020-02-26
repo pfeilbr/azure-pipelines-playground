@@ -40,11 +40,10 @@ steps:
 
   - script: | 
       echo $AWS_ACCESS_KEY_ID
-      export PATH="/home/vsts/.local/bin:$PATH"
-      aws s3 ls | head -n 1
-      pwd
-      ls -alt
-    displayName: 'list S3 buckets'
+      ./chmod +x scripts/deploy.sh
+      ./scripts/deploy.sh       
+#      export PATH="/home/vsts/.local/bin:$PATH"
+    displayName: 'deploy'
     env:
       AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
       AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)    
