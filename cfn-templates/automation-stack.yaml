@@ -1,0 +1,159 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Creates a stack containing an IAM role used to grant
+  Datadog monitoring access to AWS infrastructures. See
+  http://docs.datadoghq.com/integrations/aws/#installation for
+  details.
+
+Parameters:
+  Password:
+    NoEcho: 'true'
+    Type: String
+    Description: automation user account password
+    MinLength: '1'
+    MaxLength: '41'
+    ConstraintDescription: the password must be between 1 and 41 characters
+
+Resources:
+  S3BucketForWebsiteContent:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: Private
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+
+  CloudFrontLogsBucket:
+    Type: "AWS::S3::Bucket"
+
+  WebsiteDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        DefaultCacheBehavior:
+          TargetOriginId: "WebsiteBucketOrigin"
+          ViewerProtocolPolicy: "redirect-to-https"
+          DefaultTTL: 600 # ten minutes
+          MaxTTL: 600 # ten minutes
+          Compress: true
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: "none"
+        DefaultRootObject: "index.html"
+        Logging:
+          IncludeCookies: "false"
+          Bucket: !GetAtt CloudFrontLogsBucket.DomainName
+          Prefix: "cloudfront/logs"
+        Enabled: true
+        PriceClass: "PriceClass_All"
+        HttpVersion: "http2"
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+        Origins:
+          - Id: "WebsiteBucketOrigin"
+            DomainName: { "Fn::GetAtt": ["S3BucketForWebsiteContent", "DomainName"] }
+            S3OriginConfig:
+              OriginAccessIdentity:
+                Fn::Join:
+                  - ""
+                  - - "origin-access-identity/cloudfront/"
+                    - Ref: "CloudFrontOriginAccessIdentity"
+    DependsOn: CloudFrontLogsBucket
+
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Ref S3BucketForWebsiteContent
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3BucketForWebsiteContent
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:GetObject
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - "arn:aws:s3:::"
+                  - Ref: "S3BucketForWebsiteContent"
+                  - "/*"
+            Principal:
+              CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
+
+  AutomationUser:
+    Type: AWS::IAM::User
+    Properties:
+      LoginProfile:
+        Password: !Ref 'Password'
+
+  AutomationUserAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref 'AutomationUser'
+
+  AutomationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            AWS: !GetAtt AutomationUser.Arn
+          Action:
+          - sts:AssumeRole
+
+  AutomationPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: AutomationPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Action:
+          - s3:ListBucket
+          - s3:PutObject
+          - s3:DeleteObject
+          Effect: Allow
+          Resource: !GetAtt S3BucketForWebsiteContent.Arn
+        - Action:
+          - cloudfront:CreateDistribution
+          - cloudfront:UpdateDistribution          
+          - cloudfront:CreateInvalidation
+          Effect: Allow
+          Resource: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${WebsiteDistribution}"          
+      Roles: [!Ref AutomationRole]
+
+Outputs:
+  BucketName:
+    Description: The logical ID of the bucket
+    Value: !Ref S3BucketForWebsiteContent
+  BucketArn:
+    Description: The logical ID of the bucket
+    Value: !GetAtt S3BucketForWebsiteContent.Arn
+  CloudFrontDistributionId:
+    Description: The CloudFront distribution id
+    Value: !Ref WebsiteDistribution
+  CloudFrontDistributionDomainName:
+    Description: The CloudFront distribution domain name
+    Value: !GetAtt WebsiteDistribution.DomainName
+  RoleId:
+    Description: The logical ID of the IAM role
+    Value: !Ref AutomationRole
+  RoleArn:
+    Description: The ARN of the IAM role
+    Value: !GetAtt AutomationRole.Arn
+  PolicyId:
+    Description: The logical ID of the IAM policy
+    Value: !Ref AutomationPolicy
+  AccessKey:
+    Value: !Ref 'AutomationUserAccessKey'
+    Description: AWSAccessKeyId of new user
+  SecretKey:
+    Value: !GetAtt AutomationUserAccessKey.SecretAccessKey
+    Description: AWSSecretAccessKey of new user    
