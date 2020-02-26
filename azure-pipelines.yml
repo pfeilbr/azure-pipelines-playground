@@ -15,8 +15,8 @@ pool:
     vmImage: 'ubuntu-latest'
   
 steps:
-  - script: echo Hello, world!
-    displayName: 'Run a one-line script'
+  # - script: echo Hello, world!
+  #   displayName: 'Run a one-line script'
 
   # to install aws cli manually
   # the following two tasks are commented out because it's included in vmImage: 'ubuntu-latest'
