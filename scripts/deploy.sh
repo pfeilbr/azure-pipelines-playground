@@ -29,6 +29,8 @@ change_origin_path() {
 #   current_distribution_config=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id})
 #   next_distribution_config=$(bin/lib/update-distribution ${tag_name} "${current_distribution_config}")
 #   etag=$(bin/lib/get-etag "${current_distribution_config}")
+  next_distribution_config="my_next_distribution_config"
+  etag="my_etag"
   echo aws cloudfront update-distribution --id ${cloudfront_distribution_id} --distribution-config ${next_distribution_config} --if-match ${etag}
   echo -e "Done"
 }
