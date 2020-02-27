@@ -6,10 +6,13 @@ set -o pipefail
 set -o noglob
 
 STACK_NAME="automation"
+DOMAIN_NAME="allthecloudbits.com"
+AutomationUserPassword="automation123"
+
 aws cloudformation deploy \
     --template cfn-templates/${STACK_NAME}-stack.yaml \
     --stack-name ${STACK_NAME}-stack \
-    --parameter-overrides Password=automation123 \
+    --parameter-overrides DomainName=${DOMAIN_NAME} AutomationUserPassword=${AutomationUserPassword} \
     --capabilities CAPABILITY_IAM
 
 [ -d tmp ] || mkdir tmp

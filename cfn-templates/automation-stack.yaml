@@ -13,12 +13,7 @@ Parameters:
     Description: The domain name.
     Default: allthecloudbits.com
 
-  HostedZoneId:
-    Type: String
-    Description: The route53 hosted zone ID.
-    Default: ZB6VME2IL0QTH
-
-  Password:
+  AutomationUserPassword:
     NoEcho: 'true'
     Type: String
     Description: automation user account password
@@ -135,7 +130,7 @@ Resources:
     Type: AWS::IAM::User
     Properties:
       LoginProfile:
-        Password: !Ref 'Password'
+        Password: !Ref 'AutomationUserPassword'
 
   AutomationUserAccessKey:
     Type: AWS::IAM::AccessKey
