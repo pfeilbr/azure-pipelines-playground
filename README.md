@@ -24,7 +24,7 @@ is applied to the repo
 * [`azure-pipelines.yml`](azure-pipelines.yml) - pipeline definition that get triggered on tag to publish to site
 
 
-## Running
+## Provisioning Steps
 
 1. create route 53 hosted zone for your domain name (e.g. `mydomain.com`)
 1. update `DOMAIN_NAME` parameter in [`scripts/provision.sh`](scripts/provision.sh) with the hosted zone name 
@@ -35,10 +35,20 @@ is applied to the repo
     * STACK_NAME - defined in [`scripts/stack.sh`](scripts/stack.sh)
     * AWS_ACCESS_KEY_ID - `AccessKey` output in `./tmp/${STACK_NAME}-outputs.json`
     * AWS_SECRET_ACCESS_KEY - `SecretKey` output in `./tmp/${STACK_NAME}-outputs.json`
+
+## Publishing Steps
+
 1. update `TAG_NAME` in `./scripts/tag-and-trigger-publish.sh` with your version.
 1. trigger a pipeline run via a tag `./scripts/tag-and-trigger-publish.sh`.  
 1. publish will run.  can take up to 20 minutes to complete due CloudFront distribution update.
 1. verify updated content by visiting <https://mydomain.com> and <https://www.mydomain.com>
+
+## Deprovisioning
+
+1. deprovision aws resources `./scripts/stack.sh delete`
+1. *(optional)* manually delete S3 website and CloudFront logs buckets.
+    > these are not deleted because they still contain objects
+1. *(optional)* run `./scripts/stack.sh delete` again to permanently delete stack
 
 ---
 
