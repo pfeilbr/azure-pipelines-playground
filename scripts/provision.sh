@@ -7,12 +7,12 @@ set -o noglob
 
 STACK_NAME="automation"
 DOMAIN_NAME="allthecloudbits.com"
-AutomationUserPassword="automation123"
+AUTOMATION_USER_PASSWORD="automation123"
 
 aws cloudformation deploy \
     --template cfn-templates/${STACK_NAME}-stack.yaml \
     --stack-name ${STACK_NAME}-stack \
-    --parameter-overrides DomainName=${DOMAIN_NAME} AutomationUserPassword=${AutomationUserPassword} \
+    --parameter-overrides DomainName=${DOMAIN_NAME} AutomationUserPassword=${AUTOMATION_USER_PASSWORD} \
     --capabilities CAPABILITY_IAM
 
 [ -d tmp ] || mkdir tmp
