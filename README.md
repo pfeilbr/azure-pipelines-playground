@@ -7,6 +7,35 @@ learn [azure pipelines](https://docs.microsoft.com/en-us/azure/devops/pipelines/
 Pipeline performs an atomic deploy of static content from a github repo to a static site (CloudFront + S3 when) a tag (release)
 is applied to the repo
 
+## Infrastructure Provisioning Steps
+
+1. create route 53 hosted zone for your domain name (e.g. `mydomain.com`)
+1. update `DOMAIN_NAME` parameter in [`scripts/provision.sh`](scripts/provision.sh) with the hosted zone name 
+1. provision aws resources `./scripts/stack.sh create`
+1. Check ACM to confirm Certificate validation via DNS validation has completed.  May need to add DNS validation records to route53 hosted zone.
+1. update pipeline variables
+    * REGION - *default is us-east-1*
+    * STACK_NAME - defined in [`scripts/stack.sh`](scripts/stack.sh)
+    * AWS_ACCESS_KEY_ID - `AccessKey` output in `./tmp/${STACK_NAME}-outputs.json`
+    * AWS_SECRET_ACCESS_KEY - `SecretKey` output in `./tmp/${STACK_NAME}-outputs.json`
+
+## Website Content Publishing Steps
+
+1. update website content in [`public`](public) directory and push to github.
+1. update `TAG_NAME` in `./scripts/tag-and-trigger-publish.sh` with your version.
+1. trigger a pipeline run via a tag `./scripts/tag-and-trigger-publish.sh "v0.0.1"`.  
+1. publish will run.  can take up to 20 minutes to complete due CloudFront distribution update.
+1. verify updated content by visiting <https://mydomain.com> and <https://www.mydomain.com>
+
+## Deprovisioning
+
+1. deprovision aws resources `./scripts/stack.sh delete`
+1. *(optional)* manually delete S3 website and CloudFront logs buckets.
+    > these are not deleted because they still contain objects
+1. *(optional)* run `./scripts/stack.sh delete` again to permanently delete stack
+
+---
+
 ## Key Files and Directories
 
 * [`cfn-templates/resources.yaml`](cfn-templates/resources.yaml) - CloudFormation stack for provisioning AWS resources.
@@ -23,32 +52,6 @@ is applied to the repo
 * [`scripts/publish.sh`](scripts/publish.sh) - publishes a new version of the static site based on git tag.  this is used by pipeline
 * [`azure-pipelines.yml`](azure-pipelines.yml) - pipeline definition that get triggered on tag to publish to site
 
-
-## Provisioning Steps
-
-1. create route 53 hosted zone for your domain name (e.g. `mydomain.com`)
-1. update `DOMAIN_NAME` parameter in [`scripts/provision.sh`](scripts/provision.sh) with the hosted zone name 
-1. provision aws resources `./scripts/stack.sh create`
-1. Check ACM to confirm Certificate validation via DNS validation has completed.  May need to add DNS validation records to route53 hosted zone.
-1. update pipeline variables
-    * REGION - *default is us-east-1*
-    * STACK_NAME - defined in [`scripts/stack.sh`](scripts/stack.sh)
-    * AWS_ACCESS_KEY_ID - `AccessKey` output in `./tmp/${STACK_NAME}-outputs.json`
-    * AWS_SECRET_ACCESS_KEY - `SecretKey` output in `./tmp/${STACK_NAME}-outputs.json`
-
-## Publishing Steps
-
-1. update `TAG_NAME` in `./scripts/tag-and-trigger-publish.sh` with your version.
-1. trigger a pipeline run via a tag `./scripts/tag-and-trigger-publish.sh "v0.0.1"`.  
-1. publish will run.  can take up to 20 minutes to complete due CloudFront distribution update.
-1. verify updated content by visiting <https://mydomain.com> and <https://www.mydomain.com>
-
-## Deprovisioning
-
-1. deprovision aws resources `./scripts/stack.sh delete`
-1. *(optional)* manually delete S3 website and CloudFront logs buckets.
-    > these are not deleted because they still contain objects
-1. *(optional)* run `./scripts/stack.sh delete` again to permanently delete stack
 
 ---
 
