@@ -26,28 +26,15 @@ is applied to the repo
 
 ## Running
 
-```sh
-# you must create route 53 hosted zone first
-# update `DomainName` parameter in `scripts/provision.sh` with the hosted zone name
-
-# provision aws resources
-chmod +x scripts/provision.sh    
-./scripts/provision.sh
-
-# update pipeline variables with the following stack outputs
-#  written to ./tmp/${STACK_NAME}-outputs.json
-# `REGION, STACK_NAME, AccessKey -> AWS_ACCESS_KEY_ID, SecretKey -> AWS_SECRET_ACCESS_KEY`
-
-# trigger a pipeline run via a tag
-chmod +x scripts/tag-and-trigger-publish.sh
-./scripts/tag-and-trigger-publish.sh
-
-# delete all remote tags
-git tag -l | xargs -n 1 git push --delete origin
-
-# delete all local tags
-git tag | xargs git tag -d
-```
+1. create route 53 hosted zone
+1. update `DOMAIN_NAME` parameter in [`scripts/provision.sh`](scripts/provision.sh) with the hosted zone name 
+1. provision aws resources `./scripts/provision.sh`
+1. update pipeline variables
+    * REGION - *default is us-east-1*
+    * STACK_NAME - defined in [`scripts/provision.sh`](scripts/provision.sh)
+    * AWS_ACCESS_KEY_ID - `AccessKey` output in `./tmp/${STACK_NAME}-outputs.json`
+    * AWS_SECRET_ACCESS_KEY - `SecretKey` output in `./tmp/${STACK_NAME}-outputs.json`
+1. trigger a pipeline run via a tag `./scripts/tag-and-trigger-publish.sh`
 
 ---
 
@@ -62,3 +49,15 @@ git tag | xargs git tag -d
 ## Notes
 
 * pipeline is running in azure DevOps tied to personal gmail account
+
+---
+
+## Scratch
+
+```sh
+# delete all remote tags
+git tag -l | xargs -n 1 git push --delete origin
+
+# delete all local tags
+git tag | xargs git tag -d
+```
