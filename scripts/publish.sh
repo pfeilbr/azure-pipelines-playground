@@ -36,7 +36,8 @@ change_origin_path() {
   
   # update S3 bucket path
   new_origin_path="/${tag_name}"
-  echo $current_distribution_config | sed "s/${current_origin_path}/${new_origin_path}/g" > ${distribution_config_file_name}
+  # echo $current_distribution_config | sed "s/${current_origin_path}/${new_origin_path}/g" > ${distribution_config_file_name}
+  echo "${current_distribution_config//$current_origin_path/$new_origin_path}" > ${distribution_config_file_name}
   echo distribution_config_file_name
   cat ${distribution_config_file_name}
   aws cloudfront update-distribution --id ${cloudfront_distribution_id} --distribution-config file://${distribution_config_file_name} --if-match ${etag}

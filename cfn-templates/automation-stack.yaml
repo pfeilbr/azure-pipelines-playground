@@ -131,6 +131,7 @@ Resources:
           Effect: Allow
           Resource: !Sub "${S3BucketForWebsiteContent.Arn}/*"
         - Action:
+          - cloudfront:GetDistribution
           - cloudfront:CreateDistribution
           - cloudfront:UpdateDistribution          
           - cloudfront:CreateInvalidation
