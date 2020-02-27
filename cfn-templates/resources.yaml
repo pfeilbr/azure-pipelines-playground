@@ -1,10 +1,7 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: Creates a stack containing an IAM role used to grant
-  Datadog monitoring access to AWS infrastructures. See
-  http://docs.datadoghq.com/integrations/aws/#installation for
-  details.
+Description: Creates a stack for a static website using CloudFormation and S3 plus CI/CD automation user to handle publishing workflow
 
 Parameters:
 
