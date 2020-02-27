@@ -12,7 +12,12 @@ aws cloudformation deploy \
     --parameter-overrides Password=automation123 \
     --capabilities CAPABILITY_IAM
 
+[ -d tmp ] || mkdir tmp
+stack_outputs_file_path="tmp/${STACK_NAME}-stack-outputs.json"
+
 aws cloudformation describe-stacks \
     --stack-name "${STACK_NAME}-stack" \
     --query "Stacks[0].Outputs" \
-    --output json
+    --output json > "${stack_outputs_file_path}"
+
+echo stack outputs written to "${stack_outputs_file_path}"

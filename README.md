@@ -10,7 +10,8 @@ chmod +x scripts/provision.sh
 ./scripts/provision.sh
 
 # update pipeline variables with the following stack outputs
-# `AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, REGION, STACK_NAME`
+#  written to ./tmp/${STACK_NAME}-outputs.json
+# `AccessKey -> AWS_ACCESS_KEY_ID, SecretKey -> AWS_SECRET_ACCESS_KEY, REGION, STACK_NAME`
 
 # trigger a pipeline run via a tag
 chmod +x scripts/tag-and-trigger-publish.sh

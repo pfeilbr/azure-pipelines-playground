@@ -7,6 +7,17 @@ Description: Creates a stack containing an IAM role used to grant
   details.
 
 Parameters:
+
+  DomainName:
+    Type: String
+    Description: The domain name.
+    Default: allthecloudbits.com
+
+  HostedZoneId:
+    Type: String
+    Description: The route53 hosted zone ID.
+    Default: ZB6VME2IL0QTH
+
   Password:
     NoEcho: 'true'
     Type: String
@@ -27,10 +38,24 @@ Resources:
   CloudFrontLogsBucket:
     Type: "AWS::S3::Bucket"
 
+  Cert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub "*.${DomainName}"
+      SubjectAlternativeNames:
+        - !Ref DomainName
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          ValidationDomain: !Ref DomainName
+      ValidationMethod: DNS
+
   WebsiteDistribution:
     Type: "AWS::CloudFront::Distribution"
     Properties:
       DistributionConfig:
+        Aliases:
+          - !Ref DomainName   
+          - !Sub "www.${DomainName}"   
         DefaultCacheBehavior:
           TargetOriginId: "WebsiteBucketOrigin"
           ViewerProtocolPolicy: "redirect-to-https"
@@ -50,7 +75,10 @@ Resources:
         PriceClass: "PriceClass_All"
         HttpVersion: "http2"
         ViewerCertificate:
-          CloudFrontDefaultCertificate: true
+#          CloudFrontDefaultCertificate: true
+          AcmCertificateArn: !Ref Cert
+          MinimumProtocolVersion: TLSv1
+          SslSupportMethod: sni-only          
         Origins:
           - Id: "WebsiteBucketOrigin"
             DomainName: { "Fn::GetAtt": ["S3BucketForWebsiteContent", "DomainName"] }
@@ -86,6 +114,22 @@ Resources:
                   - "/*"
             Principal:
               CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
+
+  DNSRecordSet:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneName: !Sub "${DomainName}."
+      RecordSets:
+      - Name: !Ref DomainName
+        Type: A
+        AliasTarget:
+          HostedZoneId: "Z2FDTNDATAQYW2" # this is a special value for a CloudFront ALIAS.  not hard coded
+          DNSName: !GetAtt WebsiteDistribution.DomainName
+      - Name: !Sub "www.${DomainName}"
+        Type: CNAME
+        TTL: '60'
+        ResourceRecords:
+        - !GetAtt WebsiteDistribution.DomainName          
 
   AutomationUser:
     Type: AWS::IAM::User
