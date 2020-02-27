@@ -39,7 +39,7 @@ is applied to the repo
 ## Publishing Steps
 
 1. update `TAG_NAME` in `./scripts/tag-and-trigger-publish.sh` with your version.
-1. trigger a pipeline run via a tag `./scripts/tag-and-trigger-publish.sh`.  
+1. trigger a pipeline run via a tag `./scripts/tag-and-trigger-publish.sh "v0.0.1"`.  
 1. publish will run.  can take up to 20 minutes to complete due CloudFront distribution update.
 1. verify updated content by visiting <https://mydomain.com> and <https://www.mydomain.com>
 
