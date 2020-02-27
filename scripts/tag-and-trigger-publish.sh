@@ -5,6 +5,6 @@ set -o nounset
 set -o pipefail
 set -o noglob
 
-TAG_NAME="v0.0.10"
+TAG_NAME="v0.0.2"
 git tag -a "${TAG_NAME}" -m "releasing version ${TAG_NAME}"
 git push origin "${TAG_NAME}"

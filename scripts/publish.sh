@@ -23,17 +23,20 @@ change_origin_path() {
   tag_name=${1}
   cloudfront_distribution_id=${2}
 
-  previous_tag_name=$(git describe --abbrev=0 --tags `git rev-list --tags --skip=1  --max-count=1`)
+  #previous_tag_name=$(git describe --abbrev=0 --tags `git rev-list --tags --skip=1  --max-count=1`)
 
   echo -e "Changing cloudfront origin..."
   current_distribution_config=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id} --query "Distribution.DistributionConfig")
+  current_origin_path=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id} --query "Distribution.DistributionConfig.Origins.Items[0].OriginPath" --output text)
+  
   echo current_distribution_config
   echo $current_distribution_config
   etag=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id} --query "ETag" --output text)
   distribution_config_file_name="distribution_config.json"
   
   # update S3 bucket path
-  echo $current_distribution_config | sed "s/${previous_tag_name}/${tag_name}/g" > ${distribution_config_file_name}
+  new_origin_path="/${tag_name}"
+  echo $current_distribution_config | sed "s/${current_origin_path}/${new_origin_path}/g" > ${distribution_config_file_name}
   echo distribution_config_file_name
   cat ${distribution_config_file_name}
   aws cloudfront update-distribution --id ${cloudfront_distribution_id} --distribution-config file://${distribution_config_file_name} --if-match ${etag}
