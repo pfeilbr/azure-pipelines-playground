@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -o errexit
+#set -o errexit
 set -o nounset
 set -o pipefail
 set -o noglob
@@ -11,3 +11,8 @@ aws cloudformation deploy \
     --stack-name ${STACK_NAME}-stack \
     --parameter-overrides Password=automation123 \
     --capabilities CAPABILITY_IAM
+
+aws cloudformation describe-stacks \
+    --stack-name "${STACK_NAME}-stack" \
+    --query "Stacks[0].Outputs" \
+    --output json
