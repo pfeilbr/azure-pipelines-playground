@@ -18,9 +18,11 @@ is applied to the repo
     * IAM user for CI/CD automation used by the azure pipeline
 * [`public`](public) - static web content
 * [`scripts/provision.sh`](scripts/provision.sh) - provisions AWS resources
+* [`tmp/automation-stack-outputs.json`](tmp/automation-stack-outputs.json) - stack outputs stored here.  file gets created when stack is provisioned.
 * [`scripts/tag-and-trigger-publish.sh`](scripts/tag-and-trigger-publish.sh) - tags and pushes the tag to github to trigger the publish pipeline
 * [`scripts/publish.sh`](scripts/publish.sh) - publishes a new version of the static site based on git tag.  this is used by pipeline
 * [`azure-pipelines.yml`](azure-pipelines.yml) - pipeline definition that get triggered on tag to publish to site
+
 
 ## Running
 
