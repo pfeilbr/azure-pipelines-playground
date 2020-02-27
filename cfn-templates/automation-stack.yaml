@@ -122,10 +122,11 @@ Resources:
           Resource: !Sub "${AWS::StackId}"
         - Action:
           - s3:ListBucket
+          - s3:ListObjectsV2
           - s3:PutObject
           - s3:DeleteObject
           Effect: Allow
-          Resource: !GetAtt S3BucketForWebsiteContent.Arn
+          Resource: !Sub "${S3BucketForWebsiteContent.Arn}/*"
         - Action:
           - cloudfront:CreateDistribution
           - cloudfront:UpdateDistribution          
@@ -133,6 +134,7 @@ Resources:
           Effect: Allow
           Resource: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${WebsiteDistribution}"          
       Roles: [!Ref AutomationRole]
+      Users: [!Ref AutomationUser]
 
 Outputs:
   BucketName:
