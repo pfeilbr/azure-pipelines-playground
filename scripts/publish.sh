@@ -5,8 +5,6 @@ set -o nounset
 set -o pipefail
 set -o noglob
 
-CLOUDFRONT_DISTRIBUTION_ID="E3490EXSMQAI3D"
-BUCKET_NAME="com.merck.mysite01"
 CONTENT_DIRECTORY_PATH="./public"
 
 sync_s3() {
@@ -23,8 +21,6 @@ change_origin_path() {
   tag_name=${1}
   cloudfront_distribution_id=${2}
 
-  #previous_tag_name=$(git describe --abbrev=0 --tags `git rev-list --tags --skip=1  --max-count=1`)
-
   echo -e "Changing cloudfront origin..."
   current_distribution_config=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id} --query "Distribution.DistributionConfig")
   current_origin_path=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id} --query "Distribution.DistributionConfig.Origins.Items[0].OriginPath" --output text)
@@ -36,7 +32,6 @@ change_origin_path() {
   
   # update S3 bucket path
   new_origin_path="/${tag_name}"
-  # echo $current_distribution_config | sed "s/${current_origin_path}/${new_origin_path}/g" > ${distribution_config_file_name}
   echo "${current_distribution_config//$current_origin_path/$new_origin_path}" > ${distribution_config_file_name}
   echo distribution_config_file_name
   cat ${distribution_config_file_name}
@@ -75,8 +70,6 @@ update_content_with_version() {
 main() {
   content_directory_path=${CONTENT_DIRECTORY_PATH}
   index_file_path="${content_directory_path}/index.html"
-  #cloudfront_distribution_id=${CLOUDFRONT_DISTRIBUTION_ID}
-  #bucket_name=${BUCKET_NAME}
   cloudfront_distribution_id=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
   bucket_name=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='BucketName'].OutputValue" --output text)
   
