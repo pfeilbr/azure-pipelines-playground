@@ -26,6 +26,22 @@ Resources:
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: error.html
+        RoutingRules:
+          - RedirectRule:
+              HostName: !Sub "${DomainName}.s3.amazonaws.com"
+#              HttpRedirectCode: "307"
+              Protocol: https
+#              ReplaceKeyPrefixWith: "/"
+            RoutingRuleCondition:
+              HttpErrorCodeReturnedEquals: "403"        
+          - RedirectRule:
+              HostName: !Sub "${DomainName}.s3.amazonaws.com"
+#              HttpRedirectCode: "307"
+              Protocol: https
+#              ReplaceKeyPrefixWith: "/"
+            RoutingRuleCondition:
+              HttpErrorCodeReturnedEquals: "404"        
+
 
   CloudFrontLogsBucket:
     Type: "AWS::S3::Bucket"
