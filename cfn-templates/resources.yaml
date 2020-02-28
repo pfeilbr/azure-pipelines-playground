@@ -28,17 +28,17 @@ Resources:
         ErrorDocument: error.html
         RoutingRules:
           - RedirectRule:
-              HostName: !Sub "${DomainName}.s3.amazonaws.com"
+              HostName: !Sub "${DomainName}"
 #              HttpRedirectCode: "307"
               Protocol: https
-#              ReplaceKeyPrefixWith: "/"
+              ReplaceKeyWith: ""
             RoutingRuleCondition:
               HttpErrorCodeReturnedEquals: "403"        
           - RedirectRule:
-              HostName: !Sub "${DomainName}.s3.amazonaws.com"
+              HostName: !Sub "${DomainName}"
 #              HttpRedirectCode: "307"
               Protocol: https
-#              ReplaceKeyPrefixWith: "/"
+              ReplaceKeyWith: ""
             RoutingRuleCondition:
               HttpErrorCodeReturnedEquals: "404"        
 
