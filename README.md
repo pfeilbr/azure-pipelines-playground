@@ -63,6 +63,14 @@ is applied to the repo
 
 ---
 
+## TODO
+
+* add staging CloudFront distribution
+* redirects
+* basic auth
+
+---
+
 ## Notes
 
 * pipeline is running in azure DevOps tied to personal gmail account
