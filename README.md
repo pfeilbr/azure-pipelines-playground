@@ -70,45 +70,47 @@ is applied to the repo
     aws s3 sync --cache-control 'max-age=604800' --exclude index.html build/ s3://mywebsitebucket/
     aws s3 sync --cache-control 'no-cache' build/ s3://mywebsitebucket/
     ```
-* deny requests directly to s3.  must use domain.  remove OAI and add this.  this will allows redirects.
-    ```json
-    {
-        "Version": "2012-10-17",
-        "Id": "http referer policy ${DomainName}",
-        "Statement": [
-            {
-                "Sid": "Allow get requests referred by ${DomainName}",
-                "Effect": "Allow",
-                "Principal": "*",
-                "Action": "s3:GetObject",
-                "Resource": "arn:aws:s3:::${BUCKET}/*",
-                "Condition": {
-                    "StringLike": {
-                        "aws:Referer": [
-                            "http://${DomainName}/*",
-                            "https://${DomainName}/*"
-                        ]
+* deny requests directly to s3.  must use domain.  remove OAI and add this.  this will allows redirects in S3 to work.
+    * see [How do I use CloudFront to serve a static website hosted on Amazon S3?](https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-serve-static-website/) for details.
+    * TLDR; the referer is set on the CloudFront distribution and is a secret.  the S3 bucket policy only allows requests from this referer
+        ```json
+        {
+            "Version": "2012-10-17",
+            "Id": "http referer policy ${DomainName}",
+            "Statement": [
+                {
+                    "Sid": "Allow get requests referred by ${DomainName}",
+                    "Effect": "Allow",
+                    "Principal": "*",
+                    "Action": "s3:GetObject",
+                    "Resource": "arn:aws:s3:::${BUCKET}/*",
+                    "Condition": {
+                        "StringLike": {
+                            "aws:Referer": [
+                                "http://${DomainName}/*",
+                                "https://${DomainName}/*"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "Sid": "Explicit deny to ensure requests are allowed only from specific referer.",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Action": "s3:GetObject",
+                    "Resource": "arn:aws:s3:::${BUCKET}/*",
+                    "Condition": {
+                        "StringNotLike": {
+                            "aws:Referer": [
+                                "http://${DomainName}/*",
+                                "https://${DomainName}/*"
+                            ]
+                        }
                     }
                 }
-            },
-            {
-                "Sid": "Explicit deny to ensure requests are allowed only from specific referer.",
-                "Effect": "Deny",
-                "Principal": "*",
-                "Action": "s3:GetObject",
-                "Resource": "arn:aws:s3:::${BUCKET}/*",
-                "Condition": {
-                    "StringNotLike": {
-                        "aws:Referer": [
-                            "http://${DomainName}/*",
-                            "https://${DomainName}/*"
-                        ]
-                    }
-                }
-            }
-        ]
-    }
-    ```
+            ]
+        }
+        ```
 * add staging CloudFront distribution
     * options
         * separate bucket s3://stage s3://prod
