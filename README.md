@@ -73,6 +73,8 @@ is applied to the repo
 * deny requests directly to s3.  must use domain.  remove OAI and add this.  this will allows redirects in S3 to work.
     * see [How do I use CloudFront to serve a static website hosted on Amazon S3?](https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-serve-static-website/) for details.
     * TLDR; the referer is set on the CloudFront distribution and is a secret.  the S3 bucket policy only allows requests from this referer
+    * [I’m using an S3 REST API endpoint as the origin of my CloudFront distribution. Why am I getting 403 Access Denied errors?](https://aws.amazon.com/premiumsupport/knowledge-center/s3-rest-api-cloudfront-error-403/)
+    * [I’m using an S3 website endpoint as the origin of my CloudFront distribution. Why am I getting 403 Access Denied errors?](https://aws.amazon.com/premiumsupport/knowledge-center/s3-website-cloudfront-error-403/)
         ```json
         {
             "Version": "2012-10-17",
@@ -116,7 +118,11 @@ is applied to the repo
         * separate bucket s3://stage s3://prod
         * single bucket with prefix s3://bucket/stage/* s3://bucket/prod/*
 * redirects
-    * via lambda@edge
+    * options
+        * via lambda@edge
+        * S3 bucket routing rules (`AWS::S3::Bucket RoutingRule`)
+        * s3 object metadata [`x-amz-website-redirect-location`](https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html#RESTObjectCOPY-requests-request-headers) header
+            > If the bucket is configured as a website, redirects requests for this object to another object in the same bucket or to an external URL. Amazon S3 stores the value of this header in the object metadata.
 * basic auth on staging cloudfront dist
     * options
         * lambda@edge
