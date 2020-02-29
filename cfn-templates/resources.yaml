@@ -246,14 +246,14 @@ Resources:
       Users: [!Ref AutomationUser]
 
 Outputs:
-  BucketName:
-    Description: The logical ID of the bucket
+  WebsiteBucketName:
+    Description: The logical ID of the website bucket
     Value: !Ref S3BucketForWebsiteContent
-  BucketArn:
-    Description: The Arn of the bucket
+  WebsiteBucketArn:
+    Description: The Arn of the website bucket
     Value: !GetAtt S3BucketForWebsiteContent.Arn
-  BucketWebsiteUrl:
-    Description: The website URL of the bucket
+  WebsiteBucketUrl:
+    Description: The website URL of the website bucket
     Value: !GetAtt S3BucketForWebsiteContent.WebsiteURL
   CloudFrontDistributionId:
     Description: The CloudFront distribution id
@@ -264,6 +264,12 @@ Outputs:
   CloudFrontDistributionURL:
     Description: The CloudFront distribution URL
     Value: !Sub "https://${WebsiteDistribution.DomainName}"
+  CloudFrontLogsBucketName:
+    Description: The logical ID of the CloudFront logs bucket
+    Value: !Ref CloudFrontLogsBucket
+  CloudFrontLogsBucketArn:
+    Description: The Arn of the CloudFront logs bucket
+    Value: !GetAtt CloudFrontLogsBucket.Arn
   ApexWebsiteURL:
     Description: The apex website URL
     Value: !Sub "https://${DomainName}"

@@ -71,7 +71,7 @@ main() {
   content_directory_path=${CONTENT_DIRECTORY_PATH}
   index_file_path="${content_directory_path}/index.html"
   cloudfront_distribution_id=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
-  bucket_name=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='BucketName'].OutputValue" --output text)
+  bucket_name=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucketName'].OutputValue" --output text)
   
   # tag name only.  no commit hash appended
   deploy_tag=$(git describe --tags --abbrev=0)
