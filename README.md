@@ -65,9 +65,61 @@ is applied to the repo
 
 ## TODO
 
+* update `scripts/publish.sh` with proper cache control for index.html (no-cache)
+    ```sh
+    aws s3 sync --cache-control 'max-age=604800' --exclude index.html build/ s3://mywebsitebucket/
+    aws s3 sync --cache-control 'no-cache' build/ s3://mywebsitebucket/
+    ```
+* deny requests directly to s3.  must use domain.  remove OAI and add this.  this will allows redirects.
+    ```json
+    {
+        "Version": "2012-10-17",
+        "Id": "http referer policy ${DomainName}",
+        "Statement": [
+            {
+                "Sid": "Allow get requests referred by ${DomainName}",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": "s3:GetObject",
+                "Resource": "arn:aws:s3:::${BUCKET}/*",
+                "Condition": {
+                    "StringLike": {
+                        "aws:Referer": [
+                            "http://${DomainName}/*",
+                            "https://${DomainName}/*"
+                        ]
+                    }
+                }
+            },
+            {
+                "Sid": "Explicit deny to ensure requests are allowed only from specific referer.",
+                "Effect": "Deny",
+                "Principal": "*",
+                "Action": "s3:GetObject",
+                "Resource": "arn:aws:s3:::${BUCKET}/*",
+                "Condition": {
+                    "StringNotLike": {
+                        "aws:Referer": [
+                            "http://${DomainName}/*",
+                            "https://${DomainName}/*"
+                        ]
+                    }
+                }
+            }
+        ]
+    }
+    ```
 * add staging CloudFront distribution
+    * options
+        * separate bucket s3://stage s3://prod
+        * single bucket with prefix s3://bucket/stage/* s3://bucket/prod/*
 * redirects
-* basic auth
+    * via lambda@edge
+* basic auth on staging cloudfront dist
+    * options
+        * lambda@edge
+        * WAF rule for Authorization header
+
 
 ---
 
