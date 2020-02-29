@@ -70,6 +70,9 @@ is applied to the repo
     aws s3 sync --cache-control 'max-age=604800' --exclude index.html build/ s3://mywebsitebucket/
     aws s3 sync --cache-control 'no-cache' build/ s3://mywebsitebucket/
     ```
+* update s3 redirect/routing rules for deploy version prefix
+    * e.g. domain.com/oldlink would point to /v0.0.1/newlink in the bucket. the `/v0.0.1` prefix need to be updated in all redirect rules on deploy
+    * see https://docs.aws.amazon.com/cli/latest/reference/s3api/put-bucket-website.html
 * deny requests directly to s3.  must use domain.  remove OAI and add this.  this will allows redirects in S3 to work.
     * see [How do I use CloudFront to serve a static website hosted on Amazon S3?](https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-serve-static-website/) for details.
     * TLDR; the referer is set on the CloudFront distribution and is a secret.  the S3 bucket policy only allows requests from this referer
