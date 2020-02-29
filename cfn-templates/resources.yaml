@@ -97,7 +97,7 @@ Resources:
           Bucket: !GetAtt CloudFrontLogsBucket.DomainName
           Prefix: "cloudfront/logs"
         Enabled: true
-        PriceClass: "PriceClass_All"
+        PriceClass: "PriceClass_100" # "PriceClass_All"
         HttpVersion: "http2"
         ViewerCertificate:
 #          CloudFrontDefaultCertificate: true
