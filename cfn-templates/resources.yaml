@@ -1,7 +1,9 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: Creates a stack for a static website using CloudFormation and S3 plus CI/CD automation user to handle publishing workflow
+Description: >
+  Creates a stack for a static website using CloudFormation and S3 plus CI/CD
+  automation user to handle publishing workflow
 
 Parameters:
 
@@ -9,6 +11,21 @@ Parameters:
     Type: String
     Description: The domain name.
     Default: allthecloudbits.com
+
+  DistributionOriginPath:
+    Type: String
+    Description: >
+      The CloudFront distribution origin points to this prefix path within the
+      website bucket
+    Default: "/v0.0.1"
+
+  SecretReferer:
+    Type: String
+    Description: >
+      A secret Referer header set in the CloudFront distribution.  The S3
+      bucket policy only alows requests that include this Referer value.
+      This blocks direct requests to the S3 bucket website URL(s).
+    Default: "79011a81-c048-4877-84f4-efe9577d7250"
 
   AutomationUserPassword:
     NoEcho: 'true'
@@ -22,7 +39,7 @@ Resources:
   S3BucketForWebsiteContent:
     Type: AWS::S3::Bucket
     Properties:
-      AccessControl: Private
+      AccessControl: PublicRead
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: error.html
@@ -89,21 +106,38 @@ Resources:
           SslSupportMethod: sni-only          
         Origins:
           - Id: "WebsiteBucketOrigin"
-            DomainName: { "Fn::GetAtt": ["S3BucketForWebsiteContent", "DomainName"] }
-            OriginPath: "/v0.0.1"
-            S3OriginConfig:
-              OriginAccessIdentity:
-                Fn::Join:
-                  - ""
-                  - - "origin-access-identity/cloudfront/"
-                    - Ref: "CloudFrontOriginAccessIdentity"
-    DependsOn: CloudFrontLogsBucket
+            DomainName: !Sub "${S3BucketForWebsiteContent}.s3-website-${AWS::Region}.amazonaws.com"
+            OriginPath: !Sub "${DistributionOriginPath}"
+            CustomOriginConfig:
+              HTTPPort: '80'
+              HTTPSPort: '443'     
+              OriginProtocolPolicy: 'http-only'       
+            OriginCustomHeaders:
+              - HeaderName: Referer
+                HeaderValue: !Sub "${SecretReferer}"
 
-  CloudFrontOriginAccessIdentity:
-    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
-    Properties:
-      CloudFrontOriginAccessIdentityConfig:
-        Comment: !Ref S3BucketForWebsiteContent
+
+          # - Id: "WebsiteBucketOrigin"
+          #   DomainName: !Sub "${S3BucketForWebsiteContent}.s3-website-${AWS::Region}.amazonaws.com"
+          #   OriginPath: !Sub "${DistributionOriginPath}"
+          #   OriginCustomHeaders:
+          #     - HeaderName: Referer
+          #       HeaderValue: !Sub "${SecretReferer}"
+          #   S3OriginConfig: {}
+            #   OriginAccessIdentity:
+            #     Fn::Join:
+            #       - ""
+            #       - - "origin-access-identity/cloudfront/"
+            #         - Ref: "CloudFrontOriginAccessIdentity"
+    DependsOn:
+      - S3BucketForWebsiteContent
+      - CloudFrontLogsBucket
+
+  # CloudFrontOriginAccessIdentity:
+  #   Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+  #   Properties:
+  #     CloudFrontOriginAccessIdentityConfig:
+  #       Comment: !Ref S3BucketForWebsiteContent
 
   BucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -114,14 +148,33 @@ Resources:
           - Action:
               - s3:GetObject
             Effect: Allow
-            Resource:
-              Fn::Join:
-                - ""
-                - - "arn:aws:s3:::"
-                  - Ref: "S3BucketForWebsiteContent"
-                  - "/*"
-            Principal:
-              CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
+            Principal: "*"
+            Resource: !Sub "${S3BucketForWebsiteContent.Arn}/*"
+            Condition:
+              StringLike:
+                aws:Referer:
+                  - !Sub "${SecretReferer}"
+          - Action:
+              - s3:GetObject
+            Effect: Deny
+            Principal: "*"
+            Resource: !Sub "${S3BucketForWebsiteContent.Arn}/*"
+            Condition:
+              StringNotLike:
+                aws:Referer:
+                  - !Sub "${SecretReferer}"                  
+
+          # - Action:
+          #     - s3:GetObject
+          #   Effect: Allow
+          #   Resource:
+          #     Fn::Join:
+          #       - ""
+          #       - - "arn:aws:s3:::"
+          #         - Ref: "S3BucketForWebsiteContent"
+          #         - "/*"
+          #   Principal:
+          #     CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
 
   DNSRecordSet:
     Type: AWS::Route53::RecordSetGroup
@@ -197,14 +250,26 @@ Outputs:
     Description: The logical ID of the bucket
     Value: !Ref S3BucketForWebsiteContent
   BucketArn:
-    Description: The logical ID of the bucket
+    Description: The Arn of the bucket
     Value: !GetAtt S3BucketForWebsiteContent.Arn
+  BucketWebsiteUrl:
+    Description: The website URL of the bucket
+    Value: !GetAtt S3BucketForWebsiteContent.WebsiteURL
   CloudFrontDistributionId:
     Description: The CloudFront distribution id
     Value: !Ref WebsiteDistribution
   CloudFrontDistributionDomainName:
     Description: The CloudFront distribution domain name
     Value: !GetAtt WebsiteDistribution.DomainName
+  CloudFrontDistributionURL:
+    Description: The CloudFront distribution URL
+    Value: !Sub "https://${WebsiteDistribution.DomainName}"
+  ApexWebsiteURL:
+    Description: The apex website URL
+    Value: !Sub "https://${DomainName}"
+  WwwWebsiteURL:
+    Description: The www website URL
+    Value: !Sub "https://www.${DomainName}"
   RoleId:
     Description: The logical ID of the IAM role
     Value: !Ref AutomationRole
