@@ -35,6 +35,20 @@ Parameters:
     MaxLength: '41'
     ConstraintDescription: the password must be between 1 and 41 characters
 
+Tags:
+  - Key: "Name"
+    Value: "tagName"
+  - Key: "Costcenter"
+    Value: "tagCostcenter"
+  - Key: "Division"
+    Value: "tagDivision"
+  - Key: "Environment"
+    Value: "tagEnvironment"
+  - Key: "Application"
+    Value: "tagApplication"
+  - Key: "Consumer"
+    Value: "tagConsumer"
+
 Resources:
   S3BucketForWebsiteContent:
     Type: AWS::S3::Bucket
