@@ -10,7 +10,7 @@ is applied to the repo
 ## Infrastructure Provisioning Steps
 
 1. create route 53 hosted zone for your domain name (e.g. `mydomain.com`)
-1. update `DOMAIN_NAME` parameter in [`scripts/provision.sh`](scripts/provision.sh) with the hosted zone name 
+1. update `DOMAIN_NAME` parameter in [`scripts/stack.sh`](scripts/stack.sh) with the hosted zone name 
 1. provision aws resources `./scripts/stack.sh create`
 1. Check ACM to confirm Certificate validation via DNS validation has completed.  May need to add DNS validation records to route53 hosted zone.
 1. update pipeline variables
@@ -123,6 +123,7 @@ is applied to the repo
 * redirects
     * options
         * via lambda@edge
+        *  check if WAF supports
         * S3 bucket routing rules (`AWS::S3::Bucket RoutingRule`)
         * s3 object metadata [`x-amz-website-redirect-location`](https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html#RESTObjectCOPY-requests-request-headers) header
             > If the bucket is configured as a website, redirects requests for this object to another object in the same bucket or to an external URL. Amazon S3 stores the value of this header in the object metadata.
