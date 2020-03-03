@@ -125,12 +125,16 @@ is applied to the repo
         * via lambda@edge
         *  check if WAF supports
         * S3 bucket routing rules (`AWS::S3::Bucket RoutingRule`)
-        * s3 object metadata [`x-amz-website-redirect-location`](https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html#RESTObjectCOPY-requests-request-headers) header
+        * s3 object metadata header. see [(Optional) Configuring a Webpage Redirect](https://docs.aws.amazon.com/AmazonS3/latest/dev/how-to-page-redirect.html#advanced-conditional-redirects) and [`x-amz-website-redirect-location`](https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html#RESTObjectCOPY-requests-request-headers) 
             > If the bucket is configured as a website, redirects requests for this object to another object in the same bucket or to an external URL. Amazon S3 stores the value of this header in the object metadata.
 * basic auth on staging cloudfront dist
     * options
         * lambda@edge
         * WAF rule for Authorization header
+* create IAM policy and role for resource provisioning
+    * look at CloudFormation | Stack | Resources view for resource types
+    * specify resource name prefix and suffix as variable to allow for change
+    * specify role-arn for cloudformation cli 
 
 
 ---
