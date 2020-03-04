@@ -18,7 +18,14 @@ create() {
         --template cfn-templates/resources.yaml \
         --stack-name ${STACK_NAME} \
         --parameter-overrides DomainName=${DOMAIN_NAME} AutomationUserPassword=${AUTOMATION_USER_PASSWORD} \
-        --capabilities CAPABILITY_IAM
+        --capabilities CAPABILITY_IAM \
+        --tags \
+            Name=tagName \
+            Costcenter=tagCostcenter \
+            Division=tagDivision \
+            Environment=tagEnvironment \
+            Application=tagApplication \
+            Consumer=tagConsumer
 
     [ -d tmp ] || mkdir tmp
     stack_outputs_file_path="tmp/${STACK_NAME}-outputs.json"
