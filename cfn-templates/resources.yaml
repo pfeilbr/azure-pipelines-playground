@@ -168,15 +168,15 @@ Resources:
               StringLike:
                 aws:Referer:
                   - !Sub "${SecretReferer}"
-          - Action:
-              - s3:GetObject
-            Effect: Deny
-            Principal: "*"
-            Resource: !Sub "${S3BucketForWebsiteContent.Arn}/*"
-            Condition:
-              StringNotLike:
-                aws:Referer:
-                  - !Sub "${SecretReferer}"                  
+          # - Action:
+          #     - s3:GetObject
+          #   Effect: Deny
+          #   Principal: "*"
+          #   Resource: !Sub "${S3BucketForWebsiteContent.Arn}/*"
+          #   Condition:
+          #     StringNotLike:
+          #       aws:Referer:
+          #         - !Sub "${SecretReferer}"                  
 
           # - Action:
           #     - s3:GetObject

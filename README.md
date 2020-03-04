@@ -127,6 +127,7 @@ is applied to the repo
         * S3 bucket routing rules (`AWS::S3::Bucket RoutingRule`)
         * s3 object metadata header. see [(Optional) Configuring a Webpage Redirect](https://docs.aws.amazon.com/AmazonS3/latest/dev/how-to-page-redirect.html#advanced-conditional-redirects) and [`x-amz-website-redirect-location`](https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html#RESTObjectCOPY-requests-request-headers) 
             > If the bucket is configured as a website, redirects requests for this object to another object in the same bucket or to an external URL. Amazon S3 stores the value of this header in the object metadata.
+            * trailing slashes: see the following on how to handle [Re: S3 make a non-trailing slash URL send a 301 instead of a 302](https://forums.aws.amazon.com/thread.jspa?threadID=168000#jive-message-592535)
 * basic auth on staging cloudfront dist
     * options
         * lambda@edge
@@ -153,4 +154,62 @@ git tag -l | xargs -n 1 git push --delete origin
 
 # delete all local tags
 git tag | xargs git tag -d
+
+#REDIRECT_LOCATION="https://allthecloudbits.com/products/product02/"
+
+BUCKET="dev-agency-website-s3bucketforwebsitecontent-11u56g1n9u9oo"
+PREFIX="v0.0.1"
+
+TARGET="${PREFIX}/fq"
+REDIRECT_LOCATION="/faq/"
+
+aws --profile automation-user s3api put-object \
+    --bucket "${BUCKET}" \
+    --key "${TARGET}" \
+    --website-redirect-location "${REDIRECT_LOCATION}" \
+    --content-length "0"
+
+aws --profile automation-user s3api head-object \
+    --bucket "${BUCKET}" \
+    --key "${TARGET}"
+
+aws --profile automation-user s3api delete-object \
+    --bucket "${BUCKET}" \
+    --key "${TARGET}"
+
+
+aws --profile automation-user s3api list-objects \
+    --bucket "${BUCKET}"
+```
+
+policy components
+```json
+{
+    "Effect": "Allow",
+    "Principal": "arn:aws:iam::529276214230:user/admin",
+    "Action": "s3:*",
+    "Resource": "arn:aws:s3:::dev-agency-website-s3bucketforwebsitecontent-11u56g1n9u9oo/*",
+},
+{
+    "Effect": "Allow",
+    "Principal": "*",
+    "Action": "s3:GetObject",
+    "Resource": "arn:aws:s3:::dev-agency-website-s3bucketforwebsitecontent-11u56g1n9u9oo/*",
+    "Condition": {
+        "StringLike": {
+            "aws:Referer": "79011a81-c048-4877-84f4-efe9577d7250"
+        }
+    }
+},
+{
+    "Effect": "Deny",
+    "Principal": "*",
+    "Action": "s3:GetObject",
+    "Resource": "arn:aws:s3:::dev-agency-website-s3bucketforwebsitecontent-11u56g1n9u9oo/*",
+    "Condition": {
+        "StringNotLike": {
+            "aws:Referer": "79011a81-c048-4877-84f4-efe9577d7250"
+        }
+    }
+}
 ```
