@@ -137,7 +137,6 @@ is applied to the repo
     * specify resource name prefix and suffix as variable to allow for change
     * specify role-arn for cloudformation cli 
 
-
 ---
 
 ## Notes

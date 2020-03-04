@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: "2010-09-09"
-
+Transform: AWS::Serverless-2016-10-31
 Description: >
   Creates a stack for a static website using CloudFormation and S3 plus CI/CD
   automation user to handle publishing workflow
@@ -91,6 +91,10 @@ Resources:
             QueryString: false
             Cookies:
               Forward: "none"
+          LambdaFunctionAssociations:
+            -
+              EventType: viewer-request
+              LambdaFunctionARN: !Ref LambdaEdgeAuthFunction.Version
         DefaultRootObject: "index.html"
         Logging:
           IncludeCookies: "false"
@@ -175,6 +179,126 @@ Resources:
           #         - "/*"
           #   Principal:
           #     CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
+
+  LambdaEdgeAuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+      Role: !GetAtt LambdaEdgeAuthFunctionRole.Arn
+      Runtime: nodejs12.x
+      Handler: index.handler
+      Timeout: 5
+      AutoPublishAlias: live
+      InlineCode:
+        !Sub |
+          // basic auth
+          "use strict";
+
+          const AWS = require("aws-sdk");
+          const secretsmanager = new AWS.SecretsManager();
+          const fs = require("fs");
+
+          const log = o => console.log(JSON.stringify(o));
+
+          // cache expensive operation of loading users from secrets manager
+          let userAuthStrings = null;
+
+          const loadUserAuthStrings = async () => {
+            const resp = await secretsmanager
+              .getSecretValue({
+                SecretId: "${UsersSecret}"
+              })
+              .promise();
+            const users = JSON.parse(resp.SecretString).users;
+            userAuthStrings = users.map(
+              user =>
+                "Basic " +
+                new Buffer(user.username + ":" + user.password).toString("base64")
+            );
+          };
+
+          exports.handler = async (event, context, callback) => {
+            log({ event });
+
+            if (userAuthStrings === null) {
+              await loadUserAuthStrings();
+            }
+
+            // Get request and request headers
+            const request = event.Records[0].cf.request;
+            const headers = request.headers;
+
+            // Require Basic authentication
+            if (
+              typeof headers.authorization == "undefined" ||
+              !userAuthStrings.includes(headers.authorization[0].value)
+              //headers.authorization[0].value != authString
+            ) {
+              const body = "Unauthorized";
+              const response = {
+                status: "401",
+                statusDescription: "Unauthorized",
+                body: body,
+                headers: {
+                  "www-authenticate": [{ key: "WWW-Authenticate", value: "Basic" }]
+                }
+              };
+              return response;
+            } else {
+              // Continue request processing if authentication passed
+              return request;
+            }
+          };
+
+  LambdaEdgeAuthFunctionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+        Path: "/"
+        ManagedPolicyArns:
+            - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        Policies:
+          - PolicyName: SecretsManagerGetSecretValue
+            PolicyDocument:
+              Version: 2012-10-17
+              Statement:        
+                - Effect: "Allow"
+                  Action:
+                    - "secretsmanager:GetSecretValue"
+                  Resource: !Ref UsersSecret
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Sid: "AllowLambdaServiceToAssumeRole"
+              Effect: "Allow"
+              Action: 
+                - "sts:AssumeRole"
+              Principal:
+                Service: 
+                  - "lambda.amazonaws.com"
+                  - "edgelambda.amazonaws.com"
+
+  UsersSecret:
+    Type: "AWS::SecretsManager::Secret"
+    Properties:
+      Description: users credentials store
+      SecretString: |
+        {
+            "users": [
+                {
+                    "username": "user",
+                    "password": "pass"
+                },
+                {
+                    "username": "user01",
+                    "password": "password01"
+                },
+                {
+                    "username": "user02",
+                    "password": "password02"
+                }
+            ]
+        }      
 
   DNSRecordSet:
     Type: AWS::Route53::RecordSetGroup
