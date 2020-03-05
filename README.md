@@ -249,4 +249,8 @@ create_routing_rules() {
 }
 
 create_routing_rules "dev-agency-website-s3bucketforwebsitecontent-1fbv8htrn7nna" "v0.0.1"
+
+
+BUILD_SOURCEBRANCH=refs/tags/v0.0.1
+BUILD_SOURCEVERSION=f302ed7e007e57c118a8835f378ddd04f63e105c
 ```

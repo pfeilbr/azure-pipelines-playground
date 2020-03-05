@@ -1,7 +1,8 @@
 trigger:
-  # branches:
-  #   include:
-  #   - master
+  branches:
+    include:
+    - master
+    - develop
   tags:
     include:
     - '*'
