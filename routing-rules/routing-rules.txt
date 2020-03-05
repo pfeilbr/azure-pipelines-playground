@@ -2,4 +2,4 @@
 /product01/index.html /products/product01/
 /product02/ /products/product02/
 /product02/index.html /products/product02/
-/questions/index.html /faq/ 
+/questions/index.html /faq/
