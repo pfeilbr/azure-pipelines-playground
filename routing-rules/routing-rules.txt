@@ -1,5 +1,9 @@
 /product01/ /products/product01/
 /product01/index.html /products/product01/
+/product01 /products/product01/
 /product02/ /products/product02/
 /product02/index.html /products/product02/
+/product02 /products/product02/
+/questions/ /faq/
 /questions/index.html /faq/
+/questions /faq/
