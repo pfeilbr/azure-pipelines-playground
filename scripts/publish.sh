@@ -36,12 +36,15 @@ create_routing_rules() {
     bucket=$1
     prefix=$2
 
+    old_ifs=$IFS
     IFS=$'\r\n'
     GLOBIGNORE='*'
     rules=($(cat routing-rules/routing-rules.txt)) 
+    echo "rules=${rules[@]}"
 
     for rule in "${rules[@]}"
     do
+        echo "rule=${rule}"
         components=($(echo $rule | tr " " "\r\n"))
         echo "${components[@]}"
         target="${components[1]}"
@@ -50,6 +53,8 @@ create_routing_rules() {
 
         create_routing_rule "${bucket}" "${prefix}" "${target}" "${redirect_location}"
     done
+
+    IFS=${old_ifs}
 }
 
 change_origin_path() {
