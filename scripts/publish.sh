@@ -141,7 +141,6 @@ main() {
   "
 
   exit 0
-  
 
   if [ "${deploy_tag}" ]; then
     update_content_with_version ${index_file_path}
