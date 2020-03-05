@@ -156,11 +156,13 @@ git tag | xargs git tag -d
 
 #REDIRECT_LOCATION="https://allthecloudbits.com/products/product02/"
 
-BUCKET="dev-agency-website-s3bucketforwebsitecontent-11u56g1n9u9oo"
+REGION="us-east-1"
+STACK_NAME="dev-agency-website"
+BUCKET=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucketName'].OutputValue" --output text)
 PREFIX="v0.0.1"
 
-TARGET="${PREFIX}/fq"
-REDIRECT_LOCATION="/faq/"
+TARGET="${PREFIX}/about"
+REDIRECT_LOCATION="/about/"
 
 aws --profile automation-user s3api put-object \
     --bucket "${BUCKET}" \
@@ -211,4 +213,36 @@ policy components
         }
     }
 }
+
+create_routing_rule() {
+    bucket=$1
+    prefix=$2
+    target=$3
+    redirect_location=$4
+
+    aws s3api put-object \
+        --bucket "${bucket}" \
+        --key "${prefix}${target}" \
+        --website-redirect-location "${redirect_location}" \
+        --content-length "0"
+}
+
+create_routing_rules() {
+    bucket=$1
+    prefix=$2
+
+    IFS=$'\r\n' GLOBIGNORE='*' rules=($(cat routing-rules/routing-rules.txt)) 
+
+    for rule in "${rules[@]}"
+    do
+        components=($(echo $rule | tr " " "\r\n"))
+        target="${components[1]}"
+        redirect_location="${components[2]}"
+        # echo "target=${target}, redirect_location=${redirect_location}"
+
+        create_routing_rule "${bucket}" "${prefix}" "${target}" "${redirect_location}"
+    done
+}
+
+create_routing_rules "dev-agency-website-s3bucketforwebsitecontent-1fbv8htrn7nna" "v0.0.1"
 ```

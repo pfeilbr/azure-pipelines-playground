@@ -1,0 +1,63 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Creates a stack for IAM resources needed to provision an infrastructure stack
+
+Parameters:
+
+  ResourcePrefix:
+    Type: String
+    Description: The prefix for resources.
+    Default: dev-agency-website
+
+Resources:
+ 
+  AdminRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            AWS:
+                - !Sub "arn:aws:iam::${AWS::AccountId}:root"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:user/admin"
+          Action:
+          - sts:AssumeRole
+
+  AdminPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: AutomationPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Action:
+          - s3:*
+          Effect: Allow
+          Resource: !Sub "arn:aws:s3:::${ResourcePrefix}-*"
+        - Action:
+          - cloudfront:*
+          Effect: Allow
+          Resource: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/*"          
+        - Action:
+          - acm:*
+          Effect: Allow
+          Resource: !Sub "arn:aws:acm:${AWS::Region}:${AWS::AccountId}:certificate/*"
+        - Action:
+          - route53:*
+          Effect: Allow
+          Resource: !Sub "arn:aws:route53:::hostedzone/*"       
+      Roles: [!Ref AdminRole]
+
+Outputs:
+  RoleId:
+    Description: The logical ID of the IAM role
+    Value: !Ref AdminRole
+  RoleArn:
+    Description: The ARN of the IAM role
+    Value: !GetAtt AdminRole.Arn
+  PolicyId:
+    Description: The logical ID of the IAM policy
+    Value: !Ref AdminPolicy

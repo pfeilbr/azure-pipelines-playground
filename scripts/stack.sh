@@ -6,11 +6,39 @@ set -o pipefail
 set -o noglob
 
 REGION="us-east-1"
+PROVISIONING_STACK_NAME="dev-bootstrap-agency-website"
 STACK_NAME="dev-agency-website"
 DOMAIN_NAME="allthecloudbits.com"
 AUTOMATION_USER_PASSWORD="automation123"
+read -r -d '' TAGS <<- EOM
+    Name=tagName \
+    Costcenter=tagCostcenter \
+    Division=tagDivision \
+    Environment=tagEnvironment \
+    Application=tagApplication \
+    Consumer=tagConsumer
+EOM
 
 CMD=$1
+
+bootstrap() {
+    aws cloudformation deploy \
+        --region "${REGION}" \
+        --template cfn-templates/provisioning-resources.yaml \
+        --stack-name ${PROVISIONING_STACK_NAME} \
+        --parameter-overrides ResourcePrefix=${STACK_NAME} \
+        --capabilities CAPABILITY_IAM \
+        --tags ${TAGS}
+
+    [ -d tmp ] || mkdir tmp
+    stack_outputs_file_path="tmp/${PROVISIONING_STACK_NAME}-outputs.json"
+
+    aws cloudformation describe-stacks \
+        --region "${REGION}" \
+        --stack-name "${PROVISIONING_STACK_NAME}" \
+        --query "Stacks[0].Outputs" \
+        --output json > "${stack_outputs_file_path}"    
+}
 
 create() {
     aws cloudformation deploy \
@@ -58,6 +86,9 @@ delete() {
 }
 
 case $CMD in
+    bootstrap)
+        bootstrap
+    ;;
     create)
         create
     ;;

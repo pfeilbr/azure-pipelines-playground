@@ -1,0 +1,3 @@
+/product01/ /products/product01/
+/product02/ /products/product02/
+/questions/ /faq/ 

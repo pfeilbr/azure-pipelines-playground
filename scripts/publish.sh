@@ -67,6 +67,36 @@ update_content_with_version() {
     cat ${file_path}
 }
 
+create_routing_rule() {
+    bucket=$1
+    prefix=$2
+    target=$3
+    redirect_location=$4
+
+    aws s3api put-object \
+        --bucket "${bucket}" \
+        --key "${prefix}${target}" \
+        --website-redirect-location "${redirect_location}" \
+        --content-length "0"
+}
+
+create_routing_rules() {
+    bucket=$1
+    prefix=$2
+
+    IFS=$'\r\n' GLOBIGNORE='*' rules=($(cat routing-rules/routing-rules.txt)) 
+
+    for rule in "${rules[@]}"
+    do
+        components=($(echo $rule | tr " " "\r\n"))
+        target="${components[1]}"
+        redirect_location="${components[2]}"
+        # echo "target=${target}, redirect_location=${redirect_location}"
+
+        create_routing_rule "${bucket}" "${prefix}" "${target}" "${redirect_location}"
+    done
+}
+
 main() {
   content_directory_path=${CONTENT_DIRECTORY_PATH}
   index_file_path="${content_directory_path}/index.html"
@@ -80,6 +110,7 @@ main() {
   if [ "${deploy_tag}" ]; then
     update_content_with_version ${index_file_path}
     deploy_to_git_tag ${content_directory_path} ${deploy_tag} ${cloudfront_distribution_id} ${bucket_name}
+    create_routing_rules "${bucket_name}" "${deploy_tag}"
     echo -e "Deploy success"
   else
     echo -e "Deploy failure: no tag"
