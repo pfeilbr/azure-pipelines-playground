@@ -17,6 +17,41 @@ sync_s3() {
   echo -e "Done"
 }
 
+
+
+create_routing_rule() {
+    bucket=$1
+    prefix=$2
+    target=$3
+    redirect_location=$4
+
+    aws s3api put-object \
+        --bucket "${bucket}" \
+        --key "${prefix}${target}" \
+        --website-redirect-location "${redirect_location}" \
+        --content-length "0"
+}
+
+create_routing_rules() {
+    bucket=$1
+    prefix=$2
+
+    IFS=$'\r\n'
+    GLOBIGNORE='*'
+    rules=($(cat routing-rules/routing-rules.txt)) 
+
+    for rule in "${rules[@]}"
+    do
+        components=($(echo $rule | tr " " "\r\n"))
+        echo "${components[@]}"
+        target="${components[1]}"
+        redirect_location="${components[2]}"
+        # echo "target=${target}, redirect_location=${redirect_location}"
+
+        create_routing_rule "${bucket}" "${prefix}" "${target}" "${redirect_location}"
+    done
+}
+
 change_origin_path() {
   tag_name=${1}
   cloudfront_distribution_id=${2}
@@ -55,6 +90,7 @@ deploy_to_git_tag() {
 
   echo -e "Deploying ${tag_name}"
   sync_s3 ${content_directory_path} ${bucket_name} ${tag_name}
+  create_routing_rules "${bucket_name}" "${tag_name}"
   change_origin_path ${tag_name} ${cloudfront_distribution_id}
   aws cloudfront wait distribution-deployed --id ${cloudfront_distribution_id}
   invalidate_cache ${cloudfront_distribution_id}
@@ -65,36 +101,6 @@ update_content_with_version() {
     version_placeholder="__VERSION__"
     sed -i "s/${version_placeholder}/${deploy_tag}/g" "${file_path}"
     cat ${file_path}
-}
-
-create_routing_rule() {
-    bucket=$1
-    prefix=$2
-    target=$3
-    redirect_location=$4
-
-    aws s3api put-object \
-        --bucket "${bucket}" \
-        --key "${prefix}${target}" \
-        --website-redirect-location "${redirect_location}" \
-        --content-length "0"
-}
-
-create_routing_rules() {
-    bucket=$1
-    prefix=$2
-
-    IFS=$'\r\n' GLOBIGNORE='*' rules=($(cat routing-rules/routing-rules.txt)) 
-
-    for rule in "${rules[@]}"
-    do
-        components=($(echo $rule | tr " " "\r\n"))
-        target="${components[1]}"
-        redirect_location="${components[2]}"
-        # echo "target=${target}, redirect_location=${redirect_location}"
-
-        create_routing_rule "${bucket}" "${prefix}" "${target}" "${redirect_location}"
-    done
 }
 
 main() {
@@ -110,7 +116,6 @@ main() {
   if [ "${deploy_tag}" ]; then
     update_content_with_version ${index_file_path}
     deploy_to_git_tag ${content_directory_path} ${deploy_tag} ${cloudfront_distribution_id} ${bucket_name}
-    create_routing_rules "${bucket_name}" "${deploy_tag}"
     echo -e "Deploy success"
   else
     echo -e "Deploy failure: no tag"
