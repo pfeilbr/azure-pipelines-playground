@@ -46,7 +46,7 @@ create_routing_rules() {
         echo "${components[@]}"
         target="${components[1]}"
         redirect_location="${components[2]}"
-        # echo "target=${target}, redirect_location=${redirect_location}"
+        echo "target=${target}, redirect_location=${redirect_location}"
 
         create_routing_rule "${bucket}" "${prefix}" "${target}" "${redirect_location}"
     done
