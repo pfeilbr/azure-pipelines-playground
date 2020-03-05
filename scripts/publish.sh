@@ -129,7 +129,6 @@ main() {
     bucket_name=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucketName'].OutputValue" --output text)
     # tag name only.  no commit hash appended
     deploy_tag=$(git describe --tags --abbrev=0)
-    
   fi
 
   echo "
@@ -140,6 +139,8 @@ main() {
   bucket_name=${bucket_name}
   deploy_tag=${deploy_tag}
   "
+
+  exit 0
   
 
   if [ "${deploy_tag}" ]; then
@@ -152,7 +153,6 @@ main() {
 }
 
 start_time="$(date -u +%s)"
-env
 main "$@"
 end_time="$(date -u +%s)"
 elapsed="$(($end_time-$start_time))"
