@@ -129,6 +129,7 @@ main() {
 }
 
 start_time="$(date -u +%s)"
+env
 main "$@"
 end_time="$(date -u +%s)"
 elapsed="$(($end_time-$start_time))"
