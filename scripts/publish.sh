@@ -110,14 +110,35 @@ update_content_with_version() {
 }
 
 main() {
+  branch="${BUILD_SOURCEBRANCHNAME}"
   content_directory_path=${CONTENT_DIRECTORY_PATH}
   index_file_path="${content_directory_path}/index.html"
-  cloudfront_distribution_id=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
-  bucket_name=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucketName'].OutputValue" --output text)
-  
-  # tag name only.  no commit hash appended
-  deploy_tag=$(git describe --tags --abbrev=0)
+  cloudfront_distribution_id=""
+  bucket_name=""
+  deploy_tag=""
 
+  if [ "${branch}" = "develop" ]; then
+    # TODO: chane the following to get staging distribution id and bucket name
+    cloudfront_distribution_id=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
+    bucket_name=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucketName'].OutputValue" --output text)
+    # tag name only.  no commit hash appended
+    deploy_tag=$(git describe --tags --abbrev=0)
+  else
+    cloudfront_distribution_id=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
+    bucket_name=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucketName'].OutputValue" --output text)
+    # tag name only.  no commit hash appended
+    deploy_tag=$(git describe --tags --abbrev=0)
+  fi
+
+  echo "
+  branch=${branch}
+  content_directory_path=${content_directory_path}
+  index_file_path=${index_file_path}
+  cloudfront_distribution_id=${cloudfront_distribution_id}
+  bucket_name=${bucket_name}
+  deploy_tag=${deploy_tag}
+  "
+  
 
   if [ "${deploy_tag}" ]; then
     update_content_with_version ${index_file_path}
