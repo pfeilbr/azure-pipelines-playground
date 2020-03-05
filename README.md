@@ -65,14 +65,37 @@ is applied to the repo
 
 ## TODO
 
+* add staging CloudFront distribution
+    * options
+        * separate bucket s3://stage s3://prod
+        * single bucket with prefix s3://bucket/stage/* s3://bucket/prod/*
+* create IAM policy and role for resource provisioning
+    * look at CloudFormation | Stack | Resources view for resource types
+    * specify resource name prefix and suffix as variable to allow for change
+    * specify role-arn for cloudformation cli 
+
+## Completed / Cancelled
+
+* update s3 redirect/routing rules for deploy version prefix
+    * e.g. domain.com/oldlink would point to /v0.0.1/newlink in the bucket. the `/v0.0.1` prefix need to be updated in all redirect rules on deploy
+    * see https://docs.aws.amazon.com/cli/latest/reference/s3api/put-bucket-website.html
+* redirects
+    * options
+        * via lambda@edge
+        *  check if WAF supports
+        * S3 bucket routing rules (`AWS::S3::Bucket RoutingRule`)
+        * s3 object metadata header. see [(Optional) Configuring a Webpage Redirect](https://docs.aws.amazon.com/AmazonS3/latest/dev/how-to-page-redirect.html#advanced-conditional-redirects) and [`x-amz-website-redirect-location`](https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html#RESTObjectCOPY-requests-request-headers) 
+            > If the bucket is configured as a website, redirects requests for this object to another object in the same bucket or to an external URL. Amazon S3 stores the value of this header in the object metadata.
+            * trailing slashes: see the following on how to handle [Re: S3 make a non-trailing slash URL send a 301 instead of a 302](https://forums.aws.amazon.com/thread.jspa?threadID=168000#jive-message-592535)
+* basic auth on staging cloudfront dist
+    * options
+        * lambda@edge
+        * WAF rule for Authorization header
 * update `scripts/publish.sh` with proper cache control for index.html (no-cache)
     ```sh
     aws s3 sync --cache-control 'max-age=604800' --exclude index.html build/ s3://mywebsitebucket/
     aws s3 sync --cache-control 'no-cache' build/ s3://mywebsitebucket/
     ```
-* update s3 redirect/routing rules for deploy version prefix
-    * e.g. domain.com/oldlink would point to /v0.0.1/newlink in the bucket. the `/v0.0.1` prefix need to be updated in all redirect rules on deploy
-    * see https://docs.aws.amazon.com/cli/latest/reference/s3api/put-bucket-website.html
 * deny requests directly to s3.  must use domain.  remove OAI and add this.  this will allows redirects in S3 to work.
     * see [How do I use CloudFront to serve a static website hosted on Amazon S3?](https://aws.amazon.com/premiumsupport/knowledge-center/cloudfront-serve-static-website/) for details.
     * TLDR; the referer is set on the CloudFront distribution and is a secret.  the S3 bucket policy only allows requests from this referer
@@ -116,26 +139,7 @@ is applied to the repo
             ]
         }
         ```
-* add staging CloudFront distribution
-    * options
-        * separate bucket s3://stage s3://prod
-        * single bucket with prefix s3://bucket/stage/* s3://bucket/prod/*
-* redirects
-    * options
-        * via lambda@edge
-        *  check if WAF supports
-        * S3 bucket routing rules (`AWS::S3::Bucket RoutingRule`)
-        * s3 object metadata header. see [(Optional) Configuring a Webpage Redirect](https://docs.aws.amazon.com/AmazonS3/latest/dev/how-to-page-redirect.html#advanced-conditional-redirects) and [`x-amz-website-redirect-location`](https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html#RESTObjectCOPY-requests-request-headers) 
-            > If the bucket is configured as a website, redirects requests for this object to another object in the same bucket or to an external URL. Amazon S3 stores the value of this header in the object metadata.
-            * trailing slashes: see the following on how to handle [Re: S3 make a non-trailing slash URL send a 301 instead of a 302](https://forums.aws.amazon.com/thread.jspa?threadID=168000#jive-message-592535)
-* basic auth on staging cloudfront dist
-    * options
-        * lambda@edge
-        * WAF rule for Authorization header
-* create IAM policy and role for resource provisioning
-    * look at CloudFormation | Stack | Resources view for resource types
-    * specify resource name prefix and suffix as variable to allow for change
-    * specify role-arn for cloudformation cli 
+
 
 ---
 
