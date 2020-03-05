@@ -122,12 +122,14 @@ main() {
     cloudfront_distribution_id=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
     bucket_name=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucketName'].OutputValue" --output text)
     # tag name only.  no commit hash appended
-    deploy_tag=$(git describe --tags --abbrev=0)
+    # deploy_tag=$(git describe --tags --abbrev=0)
+    deploy_tag="${BUILD_SOURCEVERSION}" # commit sha-1 hash
   else
     cloudfront_distribution_id=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
     bucket_name=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucketName'].OutputValue" --output text)
     # tag name only.  no commit hash appended
     deploy_tag=$(git describe --tags --abbrev=0)
+    
   fi
 
   echo "
