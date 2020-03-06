@@ -111,7 +111,9 @@ replace_in_file() {
 
 update_content_with_version() {
     file_path=${1}
-    envsubst < "${file_path}" > "${file_path}"
+    envsubst < "${file_path}" > "${file_path}.tmp"
+    rm "${file_path}"
+    mv "${file_path}.tmp" "${file_path}"
     # replace_in_file "${file_path}" "BUILD_SOURCEBRANCHNAME" "${BUILD_SOURCEBRANCHNAME}"
     # replace_in_file "${file_path}" "BUILD_SOURCEVERSION" "${BUILD_SOURCEVERSION}"
     # replace_in_file "${file_path}" "BUILD_SOURCEVERSIONMESSAGE" "${BUILD_SOURCEVERSIONMESSAGE}"
