@@ -69,6 +69,10 @@ is applied to the repo
 
 ## TODO
 
+* route53 CNAME record to point directly to S3 bucket website domain.  used to troubleshoot/bypass cache issues.
+    * e.g. https://bucket.mysite.com -> https://bucket.s3-website-us-east-1.amazonaws.com
+    * research basic auth options
+        * ok not to have basic auth?
 * create IAM policy and role for resource provisioning
     * look at CloudFormation | Stack | Resources view for resource types
     * specify resource name prefix and suffix as variable to allow for change
