@@ -1,4 +1,5 @@
 trigger:
+  batch: true # system waits until the run is completed, then starts another run with all changes that have not yet been built
   branches:
     include:
     - master
