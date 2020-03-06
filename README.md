@@ -42,10 +42,11 @@ is applied to the repo
 * [`cfn-templates/resources.yaml`](cfn-templates/resources.yaml) - CloudFormation stack for provisioning AWS resources.
     * S3 bucket(s) for static content (staging + production)
     * CloudFront distribution(s) (staging + production)
+    * lambda@edge function for basic auth for staging site
     * S3 bucket for CloudFront access logs
     * SSL Certificate (ACM)
     * route53 root domain ALIAS record to CloudFront distribution
-    * route53 staging and www CNAME records to CloudFront distribution
+    * route53 **staging** and **www** CNAME records to CloudFront distribution
     * IAM user for CI/CD automation used by the azure pipeline
 * [`public`](public) - static web content
 * [`scripts/stack.sh`](scripts/stack.sh) - provisions AWS resources
