@@ -65,10 +65,6 @@ is applied to the repo
 
 ## TODO
 
-* add staging CloudFront distribution
-    * options
-        * separate bucket s3://stage s3://prod
-        * single bucket with prefix s3://bucket/stage/* s3://bucket/prod/*
 * create IAM policy and role for resource provisioning
     * look at CloudFormation | Stack | Resources view for resource types
     * specify resource name prefix and suffix as variable to allow for change
@@ -76,6 +72,10 @@ is applied to the repo
 
 ## Completed / Cancelled
 
+* add staging CloudFront distribution
+    * options
+        * separate bucket s3://stage s3://prod
+        * single bucket with prefix s3://bucket/stage/* s3://bucket/prod/*
 * update s3 redirect/routing rules for deploy version prefix
     * e.g. domain.com/oldlink would point to /v0.0.1/newlink in the bucket. the `/v0.0.1` prefix need to be updated in all redirect rules on deploy
     * see https://docs.aws.amazon.com/cli/latest/reference/s3api/put-bucket-website.html
