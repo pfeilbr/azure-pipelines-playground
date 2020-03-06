@@ -184,10 +184,10 @@ Resources:
             QueryString: false
             Cookies:
               Forward: "none"
-          LambdaFunctionAssociations:
-            -
-              EventType: viewer-request
-              LambdaFunctionARN: !Ref LambdaEdgeAuthFunction.Version
+          # LambdaFunctionAssociations:
+          #   -
+          #     EventType: viewer-request
+          #     LambdaFunctionARN: !Ref LambdaEdgeAuthFunction.Version
         DefaultRootObject: "index.html"
         Logging:
           IncludeCookies: "false"
@@ -405,6 +405,10 @@ Resources:
                 {
                     "username": "user02",
                     "password": "password02"
+                },
+                {
+                    "username": "epublishuser",
+                    "password": "epublishpassword"
                 }
             ]
         }      
