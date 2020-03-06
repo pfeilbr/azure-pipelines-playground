@@ -43,6 +43,7 @@ is applied to the repo
     * S3 bucket(s) for static content (staging + production)
     * CloudFront distribution(s) (staging + production)
     * lambda@edge function for basic auth for staging site
+    * aws secrets manager secret (json doc) to store basic auth users
     * S3 bucket for CloudFront access logs
     * SSL Certificate (ACM)
     * route53 root domain ALIAS record to CloudFront distribution
