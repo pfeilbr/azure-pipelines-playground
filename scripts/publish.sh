@@ -119,8 +119,8 @@ main() {
 
   if [ "${branch}" = "develop" ]; then
     # TODO: chane the following to get staging distribution id and bucket name
-    cloudfront_distribution_id=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
-    bucket_name=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucketName'].OutputValue" --output text)
+    cloudfront_distribution_id=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='StagingCloudFrontDistributionId'].OutputValue" --output text)
+    bucket_name=$(aws cloudformation describe-stacks --region "${REGION}" --stack-name "${STACK_NAME}" --query "Stacks[0].Outputs[?OutputKey=='StagingWebsiteBucketName'].OutputValue" --output text)
     # tag name only.  no commit hash appended
     # deploy_tag=$(git describe --tags --abbrev=0)
     deploy_tag="${BUILD_SOURCEVERSION}" # commit sha-1 hash
@@ -141,7 +141,7 @@ main() {
   deploy_tag=${deploy_tag}
   "
 
-  exit 0
+  # exit 0
 
   if [ "${deploy_tag}" ]; then
     update_content_with_version ${index_file_path}

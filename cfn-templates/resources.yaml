@@ -12,6 +12,11 @@ Parameters:
     Description: The domain name.
     Default: allthecloudbits.com
 
+  StagingDomainName:
+    Type: String
+    Description: The domain name.
+    Default: staging.allthecloudbits.com
+
   DistributionOriginPath:
     Type: String
     Description: >
@@ -36,6 +41,31 @@ Parameters:
     ConstraintDescription: the password must be between 1 and 41 characters
 
 Resources:
+
+  S3BucketForStagingWebsiteContent:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+        RoutingRules:
+          - RedirectRule:
+              HostName: !Sub "${StagingDomainName}"
+#              HttpRedirectCode: "307"
+              Protocol: https
+              ReplaceKeyWith: ""
+            RoutingRuleCondition:
+              HttpErrorCodeReturnedEquals: "403"        
+          - RedirectRule:
+              HostName: !Sub "${StagingDomainName}"
+#              HttpRedirectCode: "307"
+              Protocol: https
+              ReplaceKeyWith: ""
+            RoutingRuleCondition:
+              HttpErrorCodeReturnedEquals: "404"    
+
+
   S3BucketForWebsiteContent:
     Type: AWS::S3::Bucket
     Properties:
@@ -74,6 +104,69 @@ Resources:
           ValidationDomain: !Ref DomainName
       ValidationMethod: DNS
 
+  StagingWebsiteDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - !Sub "${StagingDomainName}"
+        DefaultCacheBehavior:
+          TargetOriginId: "WebsiteBucketOrigin"
+          ViewerProtocolPolicy: "redirect-to-https"
+          DefaultTTL: 600 # ten minutes
+          MaxTTL: 600 # ten minutes
+          Compress: true
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: "none"
+          LambdaFunctionAssociations:
+            -
+              EventType: viewer-request
+              LambdaFunctionARN: !Ref LambdaEdgeAuthFunction.Version
+        DefaultRootObject: "index.html"
+        Logging:
+          IncludeCookies: "false"
+          Bucket: !GetAtt CloudFrontLogsBucket.DomainName
+          Prefix: !Sub "cloudfront/logs/${StagingDomainName}"
+        Enabled: true
+        PriceClass: "PriceClass_100" # "PriceClass_All"
+        HttpVersion: "http2"
+        ViewerCertificate:
+#          CloudFrontDefaultCertificate: true
+          AcmCertificateArn: !Ref Cert
+          MinimumProtocolVersion: TLSv1
+          SslSupportMethod: sni-only          
+        Origins:
+          - Id: "WebsiteBucketOrigin"
+            DomainName: !Sub "${S3BucketForStagingWebsiteContent}.s3-website-${AWS::Region}.amazonaws.com"
+            OriginPath: !Sub "${DistributionOriginPath}"
+            CustomOriginConfig:
+              HTTPPort: '80'
+              HTTPSPort: '443'     
+              OriginProtocolPolicy: 'http-only'       
+            OriginCustomHeaders:
+              - HeaderName: Referer
+                HeaderValue: !Sub "${SecretReferer}"
+
+
+          # - Id: "WebsiteBucketOrigin"
+          #   DomainName: !Sub "${S3BucketForWebsiteContent}.s3-website-${AWS::Region}.amazonaws.com"
+          #   OriginPath: !Sub "${DistributionOriginPath}"
+          #   OriginCustomHeaders:
+          #     - HeaderName: Referer
+          #       HeaderValue: !Sub "${SecretReferer}"
+          #   S3OriginConfig: {}
+            #   OriginAccessIdentity:
+            #     Fn::Join:
+            #       - ""
+            #       - - "origin-access-identity/cloudfront/"
+            #         - Ref: "CloudFrontOriginAccessIdentity"
+    DependsOn:
+      - S3BucketForStagingWebsiteContent
+      - CloudFrontLogsBucket
+
+
   WebsiteDistribution:
     Type: "AWS::CloudFront::Distribution"
     Properties:
@@ -99,7 +192,7 @@ Resources:
         Logging:
           IncludeCookies: "false"
           Bucket: !GetAtt CloudFrontLogsBucket.DomainName
-          Prefix: "cloudfront/logs"
+          Prefix: !Sub "cloudfront/logs/${DomainName}"
         Enabled: true
         PriceClass: "PriceClass_100" # "PriceClass_All"
         HttpVersion: "http2"
@@ -142,6 +235,22 @@ Resources:
   #   Properties:
   #     CloudFrontOriginAccessIdentityConfig:
   #       Comment: !Ref S3BucketForWebsiteContent
+
+  StagingBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3BucketForStagingWebsiteContent
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:GetObject
+            Effect: Allow
+            Principal: "*"
+            Resource: !Sub "${S3BucketForStagingWebsiteContent.Arn}/*"
+            Condition:
+              StringLike:
+                aws:Referer:
+                  - !Sub "${SecretReferer}"
 
   BucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -315,6 +424,12 @@ Resources:
         TTL: '60'
         ResourceRecords:
         - !GetAtt WebsiteDistribution.DomainName          
+      - Name: !Sub "${StagingDomainName}"
+        Type: CNAME
+        TTL: '60'
+        ResourceRecords:
+        - !GetAtt StagingWebsiteDistribution.DomainName          
+
 
   AutomationUser:
     Type: AWS::IAM::User
@@ -352,6 +467,23 @@ Resources:
         - Action:
           - s3:ListBucket
           Effect: Allow
+          Resource: !Sub "${S3BucketForStagingWebsiteContent.Arn}"
+        - Action:
+          - s3:ListObjectsV2
+          - s3:PutObject
+          - s3:DeleteObject
+          Effect: Allow
+          Resource: !Sub "${S3BucketForStagingWebsiteContent.Arn}/*"
+        - Action:
+          - cloudfront:GetDistribution
+          - cloudfront:CreateDistribution
+          - cloudfront:UpdateDistribution          
+          - cloudfront:CreateInvalidation
+          Effect: Allow
+          Resource: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${StagingWebsiteDistribution}"    
+        - Action:
+          - s3:ListBucket
+          Effect: Allow
           Resource: !Sub "${S3BucketForWebsiteContent.Arn}"
         - Action:
           - s3:ListObjectsV2
@@ -379,6 +511,24 @@ Outputs:
   WebsiteBucketUrl:
     Description: The website URL of the website bucket
     Value: !GetAtt S3BucketForWebsiteContent.WebsiteURL
+  StagingWebsiteBucketName:
+    Description: The logical ID of the staging website bucket
+    Value: !Ref S3BucketForStagingWebsiteContent
+  StagingWebsiteBucketArn:
+    Description: The Arn of the staging website bucket
+    Value: !GetAtt S3BucketForStagingWebsiteContent.Arn
+  StagingWebsiteBucketUrl:
+    Description: The website URL of the staging website bucket
+    Value: !GetAtt S3BucketForStagingWebsiteContent.WebsiteURL
+  StagingCloudFrontDistributionId:
+    Description: The CloudFront staging distribution id
+    Value: !Ref StagingWebsiteDistribution
+  StagingCloudFrontDistributionDomainName:
+    Description: The CloudFront staging distribution domain name
+    Value: !GetAtt StagingWebsiteDistribution.DomainName
+  StagingCloudFrontDistributionURL:
+    Description: The CloudFront staging distribution URL
+    Value: !Sub "https://${StagingWebsiteDistribution.DomainName}"
   CloudFrontDistributionId:
     Description: The CloudFront distribution id
     Value: !Ref WebsiteDistribution
@@ -394,6 +544,9 @@ Outputs:
   CloudFrontLogsBucketArn:
     Description: The Arn of the CloudFront logs bucket
     Value: !GetAtt CloudFrontLogsBucket.Arn
+  StagingWebsiteURL:
+    Description: The staging website URL
+    Value: !Sub "https://${StagingDomainName}"
   ApexWebsiteURL:
     Description: The apex website URL
     Value: !Sub "https://${DomainName}"
