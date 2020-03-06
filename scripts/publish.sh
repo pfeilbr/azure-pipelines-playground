@@ -102,10 +102,18 @@ deploy_to_git_tag() {
   invalidate_cache ${cloudfront_distribution_id}
 }
 
+replace_in_file() {
+  file_path=${1}
+  search_value=${2}
+  new_value=${3}
+  sed -i "s/${search_value}/${new_value}/g" "${file_path}"
+}
+
 update_content_with_version() {
     file_path=${1}
-    version_placeholder="__VERSION__"
-    sed -i "s/${version_placeholder}/${deploy_tag}/g" "${file_path}"
+    replace_in_file "${file_path}" "BUILD_SOURCEBRANCHNAME" "${BUILD_SOURCEBRANCHNAME}"
+    replace_in_file "${file_path}" "BUILD_SOURCEVERSION" "${BUILD_SOURCEVERSION}"
+    replace_in_file "${file_path}" "BUILD_SOURCEVERSIONMESSAGE" "${BUILD_SOURCEVERSIONMESSAGE}"
     cat ${file_path}
 }
 
@@ -141,7 +149,7 @@ main() {
   deploy_tag=${deploy_tag}
   "
 
-  exit 0
+  #exit 0
 
   if [ "${deploy_tag}" ]; then
     update_content_with_version ${index_file_path}
