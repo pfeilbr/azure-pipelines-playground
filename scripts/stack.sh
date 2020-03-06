@@ -9,6 +9,7 @@ REGION="us-east-1"
 PROVISIONING_STACK_NAME="dev-bootstrap-agency-website"
 STACK_NAME="dev-agency-website"
 DOMAIN_NAME="allthecloudbits.com"
+STAGING_DOMAIN_NAME="staging.allthecloudbits.com"
 AUTOMATION_USER_PASSWORD="automation123"
 read -r -d '' TAGS <<- EOM
     Name=tagName \
@@ -45,7 +46,7 @@ create() {
         --region "${REGION}" \
         --template cfn-templates/resources.yaml \
         --stack-name ${STACK_NAME} \
-        --parameter-overrides DomainName=${DOMAIN_NAME} AutomationUserPassword=${AUTOMATION_USER_PASSWORD} \
+        --parameter-overrides DomainName=${DOMAIN_NAME} StagingDomainName=${STAGING_DOMAIN_NAME} AutomationUserPassword=${AUTOMATION_USER_PASSWORD} \
         --capabilities CAPABILITY_IAM \
         --tags \
             Name=tagName \
