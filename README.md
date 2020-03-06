@@ -22,6 +22,7 @@ is applied to the repo
 ## Website Content Publishing Steps
 
 1. update website content in [`public`](public) directory and push to github.
+1. *(optional)* update redirect rules in [`routing-rules/routing-rules.txt`](routing-rules/routing-rules.txt)
 1. update `TAG_NAME` in `./scripts/tag-and-trigger-publish.sh` with your version.
 1. trigger a pipeline run via a tag `./scripts/tag-and-trigger-publish.sh "v0.0.1"`.  
 1. publish will run.  can take up to 20 minutes to complete due CloudFront distribution update.
@@ -39,11 +40,12 @@ is applied to the repo
 ## Key Files and Directories
 
 * [`cfn-templates/resources.yaml`](cfn-templates/resources.yaml) - CloudFormation stack for provisioning AWS resources.
-    * S3 bucket for static content
-    * CloudFront distribution
+    * S3 bucket(s) for static content (staging + production)
+    * CloudFront distribution(s) (staging + production)
+    * S3 bucket for CloudFront access logs
     * SSL Certificate (ACM)
     * route53 root domain ALIAS record to CloudFront distribution
-    * route53 www CNAME record to CloudFront distribution
+    * route53 staging and www CNAME records to CloudFront distribution
     * IAM user for CI/CD automation used by the azure pipeline
 * [`public`](public) - static web content
 * [`scripts/stack.sh`](scripts/stack.sh) - provisions AWS resources
@@ -405,8 +407,51 @@ SYSTEM_ENABLEACCESSTOKEN=SecretVariable
 BUILD_BINARIESDIRECTORY=/home/vsts/work/1/b
 BUILD_BUILDID=53
 
-
 ${BUILD_REPOSITORY_URI}/tree/${BUILD_SOURCEBRANCHNAME}
 ${BUILD_REPOSITORY_URI}/commit/${BUILD_SOURCEVERSION}
+
+# athena create table for CloudFront logs
+CREATE EXTERNAL TABLE IF NOT EXISTS default.cloudfront_logs_stagingallthecloudbits (
+  `date` DATE,
+  time STRING,
+  location STRING,
+  bytes BIGINT,
+  request_ip STRING,
+  method STRING,
+  host STRING,
+  uri STRING,
+  status INT,
+  referrer STRING,
+  user_agent STRING,
+  query_string STRING,
+  cookie STRING,
+  result_type STRING,
+  request_id STRING,
+  host_header STRING,
+  request_protocol STRING,
+  request_bytes BIGINT,
+  time_taken FLOAT,
+  xforwarded_for STRING,
+  ssl_protocol STRING,
+  ssl_cipher STRING,
+  response_result_type STRING,
+  http_version STRING,
+  fle_status STRING,
+  fle_encrypted_fields INT,
+  c_port INT,
+  time_to_first_byte FLOAT,
+  x_edge_detailed_result_type STRING,
+  sc_content_type STRING,
+  sc_content_len BIGINT,
+  sc_range_start BIGINT,
+  sc_range_end BIGINT
+)
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY '\t'
+LOCATION 's3://dev-agency-website-cloudfrontlogsbucket-jf9ykpajh7n1/cloudfront/logs/staging.allthecloudbits.com/'
+TBLPROPERTIES ( 'skip.header.line.count'='2' )
+
+# query
+SELECT * FROM "default"."cloudfront_logs_stagingallthecloudbits" limit 10
 
 ```
