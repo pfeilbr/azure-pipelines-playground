@@ -69,6 +69,8 @@ is applied to the repo
 
 ## TODO
 
+* add API origin to CF distribution for requests to /api/* path
+    * precedence to 1, forward query strings, cookies, all all HTTP methods
 * route53 CNAME record to point directly to S3 bucket website domain.  used to troubleshoot/bypass cache issues.
     * e.g. https://bucket.mysite.com -> https://bucket.s3-website-us-east-1.amazonaws.com
     * research basic auth options
