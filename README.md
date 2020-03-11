@@ -71,6 +71,8 @@ is applied to the repo
 
 * add API origin to CF distribution for requests to /api/* path
     * precedence to 1, forward query strings, cookies, all all HTTP methods
+    * this is IMPORTANT **You can indeed put CF dist in front of APIG, the trick is to force HTTPS only "Viewer Protocol Policy" AND to NOT forward the HOST header because APIG needs SNI**
+    * [How do you add CloudFront in front of API Gateway](https://stackoverflow.com/questions/32825413/how-do-you-add-cloudfront-in-front-of-api-gateway)
     * [How to use API Gateway with CloudFront](https://advancedweb.hu/how-to-use-api-gateway-with-cloudfront/)
 * route53 CNAME record to point directly to S3 bucket website domain.  used to troubleshoot/bypass cache issues.
     * e.g. https://bucket.mysite.com -> https://bucket.s3-website-us-east-1.amazonaws.com

@@ -130,7 +130,7 @@ Resources:
               EventType: viewer-request
               LambdaFunctionARN: !Ref LambdaEdgeAuthFunction.Version
         CacheBehaviors:
-        - PathPattern: api/*
+        - PathPattern: /api/*
           AllowedMethods:
           - DELETE
           - GET
@@ -145,11 +145,15 @@ Resources:
           ForwardedValues:
             QueryString: true
             Headers:
-            - '*'
+            - Access-Control-Request-Headers
+            - Access-Control-Request-Method
+            - Origin
+            - Authorization
+            # - Host APIG needs to use SNI
             Cookies:
               Forward: all
           TargetOriginId: ApiOrigin
-          ViewerProtocolPolicy: redirect-to-https
+          ViewerProtocolPolicy: https-only
           Compress: true              
         DefaultRootObject: "index.html"
         Logging:
@@ -177,15 +181,13 @@ Resources:
                 HeaderValue: !Sub "${SecretReferer}"
           - Id: "ApiOrigin"
             DomainName: !Sub "${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com"
-            OriginPath: !Sub "/Prod/a"
+            OriginPath: !Sub "/Prod"
             CustomOriginConfig:
               HTTPPort: '80'
               HTTPSPort: '443'     
               OriginProtocolPolicy: 'https-only'
               OriginSSLProtocols:
               - "TLSv1.2"
-
-
 
           # - Id: "WebsiteBucketOrigin"
           #   DomainName: !Sub "${S3BucketForWebsiteContent}.s3-website-${AWS::Region}.amazonaws.com"
@@ -227,7 +229,7 @@ Resources:
           #     LambdaFunctionARN: !Ref LambdaEdgeAuthFunction.Version
 
         CacheBehaviors:
-        - PathPattern: api/*
+        - PathPattern: /api/*
           AllowedMethods:
           - DELETE
           - GET
@@ -242,11 +244,15 @@ Resources:
           ForwardedValues:
             QueryString: true
             Headers:
-            - '*'
+            - Access-Control-Request-Headers
+            - Access-Control-Request-Method
+            - Origin
+            - Authorization
+            # - Host APIG needs to use SNI
             Cookies:
               Forward: all
           TargetOriginId: ApiOrigin
-          ViewerProtocolPolicy: redirect-to-https
+          ViewerProtocolPolicy: https-only
           Compress: true
 
         DefaultRootObject: "index.html"
@@ -275,7 +281,7 @@ Resources:
                 HeaderValue: !Sub "${SecretReferer}"
           - Id: "ApiOrigin"
             DomainName: !Sub "${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com"
-            OriginPath: !Sub "/Prod/a"
+            OriginPath: !Sub "/Prod"
             CustomOriginConfig:
               HTTPPort: '80'
               HTTPSPort: '443'     
