@@ -176,8 +176,8 @@ Resources:
               - HeaderName: Referer
                 HeaderValue: !Sub "${SecretReferer}"
           - Id: "ApiOrigin"
-            DomainName: !Sub "${ApiDomainName}"
-            OriginPath: !Sub "/get"
+            DomainName: !Sub "${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com"
+            OriginPath: !Sub "/Prod"
             CustomOriginConfig:
               HTTPPort: '80'
               HTTPSPort: '443'     
@@ -271,8 +271,8 @@ Resources:
               - HeaderName: Referer
                 HeaderValue: !Sub "${SecretReferer}"
           - Id: "ApiOrigin"
-            DomainName: !Sub "${ApiDomainName}"
-            OriginPath: !Sub "/get"
+            DomainName: !Sub "${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com"
+            OriginPath: !Sub "/Prod"
             CustomOriginConfig:
               HTTPPort: '80'
               HTTPSPort: '443'     
@@ -498,6 +498,26 @@ Resources:
         ResourceRecords:
         - !GetAtt StagingWebsiteDistribution.DomainName          
 
+  HttpApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      InlineCode: |
+         exports.handler = async (event) => {
+          console.log("Hello from MyAuthFunction")
+           return {
+           statusCode: 200,
+           body: JSON.stringify(event),
+           headers: {}
+           }
+         }
+      Handler: index.handler
+      Runtime: nodejs12.x
+      Events:
+        SimpleCase:
+          Type: Api
+          Properties:
+            Path: "{proxy+}"
+            Method: ANY
 
   AutomationUser:
     Type: AWS::IAM::User
@@ -621,6 +641,9 @@ Outputs:
   WwwWebsiteURL:
     Description: The www website URL
     Value: !Sub "https://www.${DomainName}"
+  ApiURL:
+    Description: "API endpoint URL for Prod environment"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
   RoleId:
     Description: The logical ID of the IAM role
     Value: !Ref AutomationRole
