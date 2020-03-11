@@ -177,11 +177,14 @@ Resources:
                 HeaderValue: !Sub "${SecretReferer}"
           - Id: "ApiOrigin"
             DomainName: !Sub "${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com"
-            OriginPath: !Sub "/Prod"
+            OriginPath: !Sub "/Prod/a"
             CustomOriginConfig:
               HTTPPort: '80'
               HTTPSPort: '443'     
               OriginProtocolPolicy: 'https-only'
+              OriginSSLProtocols:
+              - "TLSv1.2"
+
 
 
           # - Id: "WebsiteBucketOrigin"
@@ -272,11 +275,13 @@ Resources:
                 HeaderValue: !Sub "${SecretReferer}"
           - Id: "ApiOrigin"
             DomainName: !Sub "${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com"
-            OriginPath: !Sub "/Prod"
+            OriginPath: !Sub "/Prod/a"
             CustomOriginConfig:
               HTTPPort: '80'
               HTTPSPort: '443'     
               OriginProtocolPolicy: 'https-only'
+              OriginSSLProtocols:
+              - "TLSv1.2"
 
           # - Id: "WebsiteBucketOrigin"
           #   DomainName: !Sub "${S3BucketForWebsiteContent}.s3-website-${AWS::Region}.amazonaws.com"
