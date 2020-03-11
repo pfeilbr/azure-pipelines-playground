@@ -78,7 +78,8 @@ is applied to the repo
 * create IAM policy and role for resource provisioning
     * look at CloudFormation | Stack | Resources view for resource types
     * specify resource name prefix and suffix as variable to allow for change
-    * specify role-arn for cloudformation cli 
+    * specify role-arn for cloudformation cli
+* more reliable method of picking the origin path to update since there are two origins
 
 ## Completed / Cancelled
 

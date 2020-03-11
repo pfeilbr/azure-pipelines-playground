@@ -64,7 +64,7 @@ change_origin_path() {
 
   echo -e "Changing cloudfront origin..."
   current_distribution_config=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id} --query "Distribution.DistributionConfig")
-  current_origin_path=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id} --query "Distribution.DistributionConfig.Origins.Items[0].OriginPath" --output text)
+  current_origin_path=$(aws cloudfront get-distribution --id ${cloudfront_distribution_id} --query "Distribution.DistributionConfig.Origins.Items[1].OriginPath" --output text)
   
   echo current_distribution_config
   echo $current_distribution_config

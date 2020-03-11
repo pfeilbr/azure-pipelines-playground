@@ -129,6 +129,28 @@ Resources:
             -
               EventType: viewer-request
               LambdaFunctionARN: !Ref LambdaEdgeAuthFunction.Version
+        CacheBehaviors:
+        - PathPattern: api/*
+          AllowedMethods:
+          - DELETE
+          - GET
+          - HEAD
+          - OPTIONS
+          - PATCH
+          - POST
+          - PUT
+          DefaultTTL: 0
+          MaxTTL: 0
+          MinTTL: 0
+          ForwardedValues:
+            QueryString: true
+            Headers:
+            - '*'
+            Cookies:
+              Forward: all
+          TargetOriginId: ApiOrigin
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true              
         DefaultRootObject: "index.html"
         Logging:
           IncludeCookies: "false"
@@ -153,6 +175,13 @@ Resources:
             OriginCustomHeaders:
               - HeaderName: Referer
                 HeaderValue: !Sub "${SecretReferer}"
+          - Id: "ApiOrigin"
+            DomainName: !Sub "${ApiDomainName}"
+            OriginPath: !Sub "/get"
+            CustomOriginConfig:
+              HTTPPort: '80'
+              HTTPSPort: '443'     
+              OriginProtocolPolicy: 'https-only'
 
 
           # - Id: "WebsiteBucketOrigin"
@@ -243,7 +272,7 @@ Resources:
                 HeaderValue: !Sub "${SecretReferer}"
           - Id: "ApiOrigin"
             DomainName: !Sub "${ApiDomainName}"
-            OriginPath: !Sub ""
+            OriginPath: !Sub "/get"
             CustomOriginConfig:
               HTTPPort: '80'
               HTTPSPort: '443'     
