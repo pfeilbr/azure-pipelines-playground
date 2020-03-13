@@ -21,11 +21,14 @@ is applied to the repo
 
 ## Website Content Publishing Steps
 
+1. ensure you have `develop` branch checked out *(this corresponds to staging environment)*
 1. update website content in [`public`](public) directory and push to github.
 1. *(optional)* update redirect rules in [`routing-rules/routing-rules.txt`](routing-rules/routing-rules.txt)
-1. update `TAG_NAME` in `./scripts/tag-and-trigger-publish.sh` with your version.
-1. trigger a pipeline run via a tag `./scripts/tag-and-trigger-publish.sh "v0.0.1"`.  
+1. push your commit(s) to remote (github)
 1. publish will run.  can take up to 20 minutes to complete due CloudFront distribution update.
+1. verify updated content by visiting <https://staging.mydomain.com>
+1. to publish staging to production, checkout master branch and merge in develop
+1. push your commit(s) to remote (github)
 1. verify updated content by visiting <https://mydomain.com> and <https://www.mydomain.com>
 
 ## Deprovisioning
@@ -69,11 +72,6 @@ is applied to the repo
 
 ## TODO
 
-* add API origin to CF distribution for requests to /api/* path
-    * precedence to 1, forward query strings, cookies, all all HTTP methods
-    * this is IMPORTANT **You can indeed put CF dist in front of APIG, the trick is to force HTTPS only "Viewer Protocol Policy" AND to NOT forward the HOST header because APIG needs SNI**
-    * [How do you add CloudFront in front of API Gateway](https://stackoverflow.com/questions/32825413/how-do-you-add-cloudfront-in-front-of-api-gateway)
-    * [How to use API Gateway with CloudFront](https://advancedweb.hu/how-to-use-api-gateway-with-cloudfront/)
 * route53 CNAME record to point directly to S3 bucket website domain.  used to troubleshoot/bypass cache issues.
     * e.g. https://bucket.mysite.com -> https://bucket.s3-website-us-east-1.amazonaws.com
     * research basic auth options
@@ -86,6 +84,10 @@ is applied to the repo
 
 ## Completed / Cancelled
 
+* add API origin to CF distribution for requests to /api/* path
+    * precedence to 1, forward query strings, cookies, all all HTTP methods
+    * this is IMPORTANT **You can indeed put CF dist in front of APIG, the trick is to force HTTPS only "Viewer Protocol Policy" AND to NOT forward the HOST header because APIG needs SNI**. see [How do you add CloudFront in front of API Gateway](https://stackoverflow.com/questions/32825413/how-do-you-add-cloudfront-in-front-of-api-gateway)
+    * [How to use API Gateway with CloudFront](https://advancedweb.hu/how-to-use-api-gateway-with-cloudfront/)
 * add staging CloudFront distribution
     * options
         * separate bucket s3://stage s3://prod
