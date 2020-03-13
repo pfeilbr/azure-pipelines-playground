@@ -50,6 +50,7 @@ Resources:
   S3BucketForStagingWebsiteContent:
     Type: AWS::S3::Bucket
     Properties:
+      BucketName: !Sub "staging-bucket.${DomainName}"
       AccessControl: PublicRead
       WebsiteConfiguration:
         IndexDocument: index.html
@@ -69,7 +70,6 @@ Resources:
               ReplaceKeyWith: ""
             RoutingRuleCondition:
               HttpErrorCodeReturnedEquals: "404"    
-
 
   S3BucketForWebsiteContent:
     Type: AWS::S3::Bucket
@@ -326,6 +326,7 @@ Resources:
               StringLike:
                 aws:Referer:
                   - !Sub "${SecretReferer}"
+                  - !Sub "${S3BucketForStagingWebsiteContent.WebsiteURL}/*"
 
   BucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -508,6 +509,11 @@ Resources:
         TTL: '60'
         ResourceRecords:
         - !GetAtt StagingWebsiteDistribution.DomainName          
+      - Name: !Sub "staging-bucket.${DomainName}"
+        Type: CNAME
+        TTL: '60'
+        ResourceRecords:
+        - !Sub "${S3BucketForStagingWebsiteContent}.s3-website-${AWS::Region}.amazonaws.com"
 
   HttpApiFunction:
     Type: AWS::Serverless::Function
