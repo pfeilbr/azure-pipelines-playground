@@ -484,7 +484,7 @@ Resources:
           VisibilityConfig:
             SampledRequestsEnabled: true
             CloudWatchMetricsEnabled: true
-            MetricName: RuleWithAWSManagedRulesMetric
+            MetricName: !Sub "${AWS::StackName}-RuleWithAWSManagedRulesMetric"
           Statement:
             ManagedRuleGroupStatement:
               VendorName: AWS

@@ -74,6 +74,7 @@ is applied to the repo
 ## TODO
 
 * add WAF ACL and associate to CF dist(s)
+    * see [Web ACL created om WAF V2 not accessible on CloudFront](https://forums.aws.amazon.com/thread.jspa?messageID=936616&#936616)
 * route53 CNAME record to point directly to S3 bucket website domain.  used to troubleshoot/bypass cache issues.
     * e.g. https://bucket.mysite.com -> https://bucket.s3-website-us-east-1.amazonaws.com
     * research basic auth options
