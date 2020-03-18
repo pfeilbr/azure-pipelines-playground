@@ -72,6 +72,7 @@ is applied to the repo
 
 ## TODO
 
+* add WAF ACL and associate to CF dist(s)
 * route53 CNAME record to point directly to S3 bucket website domain.  used to troubleshoot/bypass cache issues.
     * e.g. https://bucket.mysite.com -> https://bucket.s3-website-us-east-1.amazonaws.com
     * research basic auth options
@@ -467,5 +468,45 @@ TBLPROPERTIES ( 'skip.header.line.count'='2' )
 
 # query
 SELECT * FROM "default"."cloudfront_logs_stagingallthecloudbits" limit 10
+
+# CF dist WAF association 
+myDistribution
+  Type AWS::CloudFront::Distribution
+  Properties:
+    DistributionConfig:
+        WebACLId: !Ref : MyWebACL
+
+# aws managed rule groups
+https://docs.aws.amazon.com/waf/latest/developerguide/aws-managed-rule-groups-list.html
+
+AWS::WAFv2::WebACL
+
+
+
+   Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: waf-webacl
+      Scope: CLOUDFRONT
+      Description: CloudFront WAF WebACL
+      DefaultAction:
+        Allow: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: ExampleWebACLMetric
+      Rules:
+        - Name: RuleWithAWSManagedRules
+          Priority: 0
+          OverrideAction:
+            Count: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: RuleWithAWSManagedRulesMetric
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+              ExcludedRules: []
 
 ```

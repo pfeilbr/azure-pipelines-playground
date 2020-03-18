@@ -113,6 +113,7 @@ Resources:
     Type: "AWS::CloudFront::Distribution"
     Properties:
       DistributionConfig:
+        WebACLId: !Sub "${CloudFrontWebACL.Arn}"
         Aliases:
           - !Sub "${StagingDomainName}"
         DefaultCacheBehavior:
@@ -210,6 +211,7 @@ Resources:
     Type: "AWS::CloudFront::Distribution"
     Properties:
       DistributionConfig:
+        WebACLId: !Sub "${CloudFrontWebACL.Arn}"
         Aliases:
           - !Ref DomainName   
           - !Sub "www.${DomainName}"   
@@ -462,6 +464,32 @@ Resources:
                 Service: 
                   - "lambda.amazonaws.com"
                   - "edgelambda.amazonaws.com"
+
+  CloudFrontWebACL:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Scope: CLOUDFRONT
+      Description: CloudFront WAF WebACL
+      DefaultAction:
+        Allow: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub "${AWS::StackName}-WebACLMetric"
+      Rules:
+        - Name: RuleWithAWSManagedRules
+          Priority: 0
+          OverrideAction:
+            Count: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: RuleWithAWSManagedRulesMetric
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+              ExcludedRules: []
 
   UsersSecret:
     Type: "AWS::SecretsManager::Secret"
