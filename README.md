@@ -4,7 +4,7 @@ learn [azure pipelines](https://docs.microsoft.com/en-us/azure/devops/pipelines/
 
 ## Description
 
-Pipeline performs an atomic deploy of static content from a github repo to a static site (CloudFront + S3 when) a tag (release)
+Pipeline performs an atomic deploy of static content from a github repo to a static site (Rout53 + ACM + WAF CloudFront + S3 when) a tag (release)
 is applied to the repo
 
 ## Infrastructure Provisioning Steps
@@ -46,6 +46,7 @@ is applied to the repo
     * S3 bucket(s) for static content (staging + production)
     * CloudFront distribution(s) (staging + production)
     * lambda@edge function for basic auth for staging site
+    * WAF Web ACL for CloudFront distribution(s)
     * aws secrets manager secret (json doc) to store basic auth users
     * S3 bucket for CloudFront access logs
     * SSL Certificate (ACM)
