@@ -2,6 +2,25 @@
 
 learn [azure pipelines](https://docs.microsoft.com/en-us/azure/devops/pipelines/?view=azure-devops)
 
+<!-- TOC -->
+
+- [azure-pipelines-playground](#azure-pipelines-playground)
+    - [Description](#description)
+    - [Infrastructure Provisioning Steps](#infrastructure-provisioning-steps)
+    - [Website Content Publishing Steps](#website-content-publishing-steps)
+    - [Deprovisioning](#deprovisioning)
+    - [Architecture](#architecture)
+    - [Key Files and Directories](#key-files-and-directories)
+    - [Screenshots](#screenshots)
+    - [TODO](#todo)
+    - [Completed / Cancelled](#completed--cancelled)
+    - [Notes](#notes)
+    - [Scratch](#scratch)
+
+<!-- /TOC -->
+
+---
+
 ## Description
 
 Pipeline performs an atomic deploy of static content from a github repo to a static site (Rout53 + ACM + WAF CloudFront + S3 when) a tag (release)
@@ -37,6 +56,12 @@ is applied to the repo
 1. *(optional)* manually delete S3 website and CloudFront logs buckets.
     > these are not deleted because they still contain objects
 1. *(optional)* run `./scripts/stack.sh delete` again to permanently delete stack
+
+---
+
+## Architecture
+
+![architecture](assets/images/architecture.png)
 
 ---
 
