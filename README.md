@@ -98,20 +98,15 @@ is applied to the repo
 
 ## TODO
 
-* add WAF ACL and associate to CF dist(s)
-    * see [Web ACL created om WAF V2 not accessible on CloudFront](https://forums.aws.amazon.com/thread.jspa?messageID=936616&#936616)
 * route53 CNAME record to point directly to S3 bucket website domain.  used to troubleshoot/bypass cache issues.
     * e.g. https://bucket.mysite.com -> https://bucket.s3-website-us-east-1.amazonaws.com
     * research basic auth options
         * ok not to have basic auth?
-* create IAM policy and role for resource provisioning
-    * look at CloudFormation | Stack | Resources view for resource types
-    * specify resource name prefix and suffix as variable to allow for change
-    * specify role-arn for cloudformation cli
-* more reliable method of picking the origin path to update since there are two origins
 
 ## Completed / Cancelled
 
+* add WAF ACL and associate to CF dist(s)
+    * see [Web ACL created om WAF V2 not accessible on CloudFront](https://forums.aws.amazon.com/thread.jspa?messageID=936616&#936616)
 * add API origin to CF distribution for requests to /api/* path
     * precedence to 1, forward query strings, cookies, all all HTTP methods
     * this is IMPORTANT **You can indeed put CF dist in front of APIG, the trick is to force HTTPS only "Viewer Protocol Policy" AND to NOT forward the HOST header because APIG needs SNI**. see [How do you add CloudFront in front of API Gateway](https://stackoverflow.com/questions/32825413/how-do-you-add-cloudfront-in-front-of-api-gateway)
@@ -123,6 +118,11 @@ is applied to the repo
 * update s3 redirect/routing rules for deploy version prefix
     * e.g. domain.com/oldlink would point to /v0.0.1/newlink in the bucket. the `/v0.0.1` prefix need to be updated in all redirect rules on deploy
     * see https://docs.aws.amazon.com/cli/latest/reference/s3api/put-bucket-website.html
+* more reliable method of picking the origin path to update since there are two origins
+* create IAM policy and role for resource provisioning
+    * look at CloudFormation | Stack | Resources view for resource types
+    * specify resource name prefix and suffix as variable to allow for change
+    * specify role-arn for cloudformation cli
 * redirects
     * options
         * via lambda@edge
